@@ -1,0 +1,13 @@
+{
+  "name": "madhu-birthday-countdown",
+  "private": true,
+  "description": "Static birthday countdown — local dev server optional",
+  "scripts": {
+    "dev": "serve . -l 3000",
+    "start": "serve . -l 3000",
+    "open": "serve . -l 3000"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}

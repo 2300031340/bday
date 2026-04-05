@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Birthday countdown for Madhu Shalini — June 30, 2026" />
+  <meta name="theme-color" content="#1a0f24" />
+  <title>Madhu Shalini — Birthday Countdown</title>
+  <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="body--intro">
+  <!-- Ambient background layers -->
+  <div class="bg-blobs" aria-hidden="true">
+    <span class="blob blob-1"></span>
+    <span class="blob blob-2"></span>
+    <span class="blob blob-3"></span>
+  </div>
+
+  <canvas id="confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+  <audio id="bg-audio" src="assets/audio/dheema.mp3" loop preload="auto" playsinline></audio>
+
+  <!-- Intro: only sleepy panda visible until clicked -->
+  <div id="wake-overlay" class="wake-overlay" role="dialog" aria-modal="true" aria-labelledby="wake-hint">
+    <div class="wake-overlay__beam wake-overlay__beam--1" aria-hidden="true"></div>
+    <div class="wake-overlay__beam wake-overlay__beam--2" aria-hidden="true"></div>
+    <div class="wake-overlay__beam wake-overlay__beam--3" aria-hidden="true"></div>
+
+    <p id="wake-hint" class="wake-hint">Wake me up</p>
+    <p class="wake-sub">Click the sleepy panda to begin</p>
+
+    <button type="button" class="panda-btn" id="panda-wake" aria-label="Wake up the panda and open the page">
+      <span class="panda-btn__zzz" aria-hidden="true">z</span>
+      <span class="panda-btn__zzz panda-btn__zzz--2" aria-hidden="true">z</span>
+      <span class="panda-btn__zzz panda-btn__zzz--3" aria-hidden="true">z</span>
+      <svg class="panda-svg" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- cloud / ground -->
+        <ellipse cx="100" cy="138" rx="88" ry="18" fill="rgba(255,255,255,0.06)" />
+        <!-- body -->
+        <ellipse cx="100" cy="95" rx="52" ry="48" fill="#2d2a32" />
+        <!-- ears -->
+        <circle cx="58" cy="52" r="18" fill="#2d2a32" />
+        <circle cx="142" cy="52" r="18" fill="#2d2a32" />
+        <circle cx="58" cy="52" r="10" fill="#f472b6" opacity="0.35" />
+        <circle cx="142" cy="52" r="10" fill="#f472b6" opacity="0.35" />
+        <!-- face patch -->
+        <ellipse cx="100" cy="98" rx="38" ry="34" fill="#f5f0eb" />
+        <!-- eyes sleeping -->
+        <path class="panda-eye panda-eye--l" d="M78 88 Q88 92 98 88" stroke="#1a1520" stroke-width="3" stroke-linecap="round" fill="none" />
+        <path class="panda-eye panda-eye--r" d="M102 88 Q112 92 122 88" stroke="#1a1520" stroke-width="3" stroke-linecap="round" fill="none" />
+        <!-- eyes awake (hidden until animation) -->
+        <ellipse class="panda-eye-open panda-eye-open--l" cx="88" cy="86" rx="9" ry="11" fill="#1a1520" opacity="0" />
+        <ellipse class="panda-eye-open panda-eye-open--r" cx="112" cy="86" rx="9" ry="11" fill="#1a1520" opacity="0" />
+        <circle class="panda-eye-dot panda-eye-dot--l" cx="90" cy="84" r="3" fill="#fff" opacity="0" />
+        <circle class="panda-eye-dot panda-eye-dot--r" cx="114" cy="84" r="3" fill="#fff" opacity="0" />
+        <!-- nose -->
+        <ellipse cx="100" cy="102" rx="8" ry="6" fill="#1a1520" />
+        <!-- paws -->
+        <ellipse cx="62" cy="118" rx="14" ry="12" fill="#2d2a32" />
+        <ellipse cx="138" cy="118" rx="14" ry="12" fill="#2d2a32" />
+      </svg>
+    </button>
+  </div>
+
+  <button type="button" class="music-toggle" id="music-toggle" aria-pressed="true" aria-label="Mute background music" tabindex="-1">
+    <span class="music-icon music-on" aria-hidden="true">♪</span>
+    <span class="music-icon music-off" aria-hidden="true">♪̸</span>
+  </button>
+
+  <header class="site-header" id="site-header">
+    <nav class="nav" aria-label="Section navigation">
+      <a href="#hero">Home</a>
+      <a href="#countdown">Countdown</a>
+      <a href="#message">Message</a>
+      <a href="#stars">Sky</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#surprise">Surprise</a>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <!-- Hero: full-width landscape-style video background + butterflies -->
+    <section id="hero" class="hero hero--butterfly">
+      <div class="hero__video-bg" aria-hidden="true">
+        <video
+          id="hero-video"
+          class="hero__video"
+          src="assets/images/IMG_8336.MOV"
+          muted
+          loop
+          playsinline
+          preload="metadata"
+        ></video>
+        <div class="hero__video-scrim"></div>
+        <!-- Soft frosted blur behind the name (uses backdrop-filter) -->
+        <div class="hero__name-blur" aria-hidden="true"></div>
+      </div>
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="hero__content">
+        <p class="hero__eyebrow" id="hero-eyebrow">A celebration for</p>
+
+        <h1 class="hero-name" id="hero-name" aria-label="Madhu Shalini">
+          <span class="name-line" id="name-line-1"></span>
+          <span class="name-line name-line--second" id="name-line-2"></span>
+        </h1>
+
+        <p class="hero__subtitle hero__subtitle--delayed" id="hero-subtitle">
+          <span id="hero-greeting-text"></span><span class="emoji" aria-hidden="true"> 🎉</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- Countdown -->
+    <section id="countdown" class="countdown-section">
+      <h2 class="section-title">Until Your Special Day</h2>
+      <p class="section-lead">June 30, 2026 · Mark the moment</p>
+      <div class="timer" id="timer" role="timer" aria-live="polite" aria-atomic="true">
+        <div class="timer__unit">
+          <div class="timer__value" id="days">00</div>
+          <div class="timer__label">Days</div>
+        </div>
+        <div class="timer__unit">
+          <div class="timer__value" id="hours">00</div>
+          <div class="timer__label">Hours</div>
+        </div>
+        <div class="timer__unit">
+          <div class="timer__value" id="minutes">00</div>
+          <div class="timer__label">Minutes</div>
+        </div>
+        <div class="timer__unit">
+          <div class="timer__value" id="seconds">00</div>
+          <div class="timer__label">Seconds</div>
+        </div>
+      </div>
+      <p class="countdown-done" id="countdown-done" hidden>It’s here — Happy Birthday! <span aria-hidden="true">🎂</span></p>
+    </section>
+
+    <!-- Message -->
+    <section id="message" class="message-section">
+      <h2 class="section-title">A Note For You</h2>
+      <div class="message-card glass">
+        <p class="message-text" id="message-text"></p>
+        <span class="message-cursor" id="message-cursor" aria-hidden="true">|</span>
+      </div>
+    </section>
+
+    <!-- Decorative June night sky (birth 30 Jun 2006 · celebration 30 Jun 2026) -->
+    <section id="stars" class="star-map-section" aria-labelledby="stars-title">
+      <h2 class="section-title" id="stars-title">Our June sky</h2>
+      <p class="section-lead star-map-section__lead">
+        Born on a summer June 30 (2006) — and this celebration is for June 30, 2026.
+      </p>
+      <div class="star-map-frame glass">
+        <img
+          id="star-chart-img"
+          class="star-map__img"
+          src="assets/images/star-map.svg"
+          width="1200"
+          height="420"
+          alt="Night sky chart or decorative placeholder"
+          loading="lazy"
+        />
+      </div>
+    </section>
+
+    <!-- Gallery: six memories unlock on staggered dates (equal sixths of time until June 30, 2026) -->
+    <section id="gallery" class="gallery-section">
+      <h2 class="section-title">Moments &amp; Memories</h2>
+      <p class="section-lead gallery-section__lead">
+        Six surprises on staggered days until your birthday. Each card’s progress matches its own countdown — tap once per day to add a step until you reach that card’s days. Progress is stored in this browser and, when Supabase is configured, synced to the cloud so phone and laptop stay aligned.
+      </p>
+      <div class="gallery-grid">
+        <article class="gallery-cell">
+          <figure class="gallery-item" data-memory-index="0">
+            <div class="gallery-item__frame">
+              <img src="assets/images/placeholder1.svg" alt="" width="400" height="300" loading="lazy" />
+              <div class="gallery-item__veil" aria-hidden="true"><span class="gallery-item__veil-icon">✦</span></div>
+              <p class="gallery-surprise-label" id="gallery-label-0">
+                <span class="gallery-surprise-calm">Surprise in <span class="gallery-surprise-days">—</span> <span class="gallery-day-unit">days</span></span>
+              </p>
+              <span class="gallery-decor" aria-hidden="true"><span class="gallery-prism gallery-prism--a"></span></span>
+              <div class="gallery-progress">
+                <div
+                  class="gallery-progress__track"
+                  id="gallery-progress-track-0"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                  aria-label="Daily progress for memory 1"
+                >
+                  <div class="gallery-progress__fill" id="gallery-progress-fill-0" style="width: 0%"></div>
+                </div>
+                <p class="gallery-progress__meta"><span class="gallery-progress__count" id="gallery-progress-count-0">0</span> / <span class="gallery-progress__max" id="gallery-progress-max-0">—</span> days</p>
+                <button type="button" class="gallery-progress__btn" data-memory-index="0">Tap once for today</button>
+              </div>
+            </div>
+          </figure>
+        </article>
+        <article class="gallery-cell">
+          <figure class="gallery-item" data-memory-index="1">
+            <div class="gallery-item__frame">
+              <img src="assets/images/placeholder2.svg" alt="" width="400" height="300" loading="lazy" />
+              <div class="gallery-item__veil" aria-hidden="true"><span class="gallery-item__veil-icon">✦</span></div>
+              <p class="gallery-surprise-label" id="gallery-label-1">
+                <span class="gallery-surprise-calm">Surprise in <span class="gallery-surprise-days">—</span> <span class="gallery-day-unit">days</span></span>
+              </p>
+              <span class="gallery-decor" aria-hidden="true"><span class="gallery-prism gallery-prism--b"></span></span>
+              <div class="gallery-progress">
+                <div
+                  class="gallery-progress__track"
+                  id="gallery-progress-track-1"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                  aria-label="Daily progress for memory 2"
+                >
+                  <div class="gallery-progress__fill" id="gallery-progress-fill-1" style="width: 0%"></div>
+                </div>
+                <p class="gallery-progress__meta"><span class="gallery-progress__count" id="gallery-progress-count-1">0</span> / <span class="gallery-progress__max" id="gallery-progress-max-1">—</span> days</p>
+                <button type="button" class="gallery-progress__btn" data-memory-index="1">Tap once for today</button>
+              </div>
+            </div>
+          </figure>
+        </article>
+        <article class="gallery-cell">
+          <figure class="gallery-item" data-memory-index="2">
+            <div class="gallery-item__frame">
+              <img src="assets/images/placeholder3.svg" alt="" width="400" height="300" loading="lazy" />
+              <div class="gallery-item__veil" aria-hidden="true"><span class="gallery-item__veil-icon">✦</span></div>
+              <p class="gallery-surprise-label" id="gallery-label-2">
+                <span class="gallery-surprise-calm">Surprise in <span class="gallery-surprise-days">—</span> <span class="gallery-day-unit">days</span></span>
+              </p>
+              <span class="gallery-decor" aria-hidden="true"><span class="gallery-prism gallery-prism--c"></span></span>
+              <div class="gallery-progress">
+                <div
+                  class="gallery-progress__track"
+                  id="gallery-progress-track-2"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                  aria-label="Daily progress for memory 3"
+                >
+                  <div class="gallery-progress__fill" id="gallery-progress-fill-2" style="width: 0%"></div>
+                </div>
+                <p class="gallery-progress__meta"><span class="gallery-progress__count" id="gallery-progress-count-2">0</span> / <span class="gallery-progress__max" id="gallery-progress-max-2">—</span> days</p>
+                <button type="button" class="gallery-progress__btn" data-memory-index="2">Tap once for today</button>
+              </div>
+            </div>
+          </figure>
+        </article>
+        <article class="gallery-cell">
+          <figure class="gallery-item" data-memory-index="3">
+            <div class="gallery-item__frame">
+              <img src="assets/images/placeholder4.svg" alt="" width="400" height="300" loading="lazy" />
+              <div class="gallery-item__veil" aria-hidden="true"><span class="gallery-item__veil-icon">✦</span></div>
+              <p class="gallery-surprise-label" id="gallery-label-3">
+                <span class="gallery-surprise-calm">Surprise in <span class="gallery-surprise-days">—</span> <span class="gallery-day-unit">days</span></span>
+              </p>
+              <span class="gallery-decor" aria-hidden="true"><span class="gallery-prism gallery-prism--d"></span></span>
+              <div class="gallery-progress">
+                <div
+                  class="gallery-progress__track"
+                  id="gallery-progress-track-3"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                  aria-label="Daily progress for memory 4"
+                >
+                  <div class="gallery-progress__fill" id="gallery-progress-fill-3" style="width: 0%"></div>
+                </div>
+                <p class="gallery-progress__meta"><span class="gallery-progress__count" id="gallery-progress-count-3">0</span> / <span class="gallery-progress__max" id="gallery-progress-max-3">—</span> days</p>
+                <button type="button" class="gallery-progress__btn" data-memory-index="3">Tap once for today</button>
+              </div>
+            </div>
+          </figure>
+        </article>
+        <article class="gallery-cell">
+          <figure class="gallery-item" data-memory-index="4">
+            <div class="gallery-item__frame">
+              <img src="assets/images/placeholder5.svg" alt="" width="400" height="300" loading="lazy" />
+              <div class="gallery-item__veil" aria-hidden="true"><span class="gallery-item__veil-icon">✦</span></div>
+              <p class="gallery-surprise-label" id="gallery-label-4">
+                <span class="gallery-surprise-calm">Surprise in <span class="gallery-surprise-days">—</span> <span class="gallery-day-unit">days</span></span>
+              </p>
+              <span class="gallery-decor" aria-hidden="true"><span class="gallery-prism gallery-prism--e"></span></span>
+              <div class="gallery-progress">
+                <div
+                  class="gallery-progress__track"
+                  id="gallery-progress-track-4"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                  aria-label="Daily progress for memory 5"
+                >
+                  <div class="gallery-progress__fill" id="gallery-progress-fill-4" style="width: 0%"></div>
+                </div>
+                <p class="gallery-progress__meta"><span class="gallery-progress__count" id="gallery-progress-count-4">0</span> / <span class="gallery-progress__max" id="gallery-progress-max-4">—</span> days</p>
+                <button type="button" class="gallery-progress__btn" data-memory-index="4">Tap once for today</button>
+              </div>
+            </div>
+          </figure>
+        </article>
+        <article class="gallery-cell">
+          <figure class="gallery-item" data-memory-index="5">
+            <div class="gallery-item__frame">
+              <img src="assets/images/placeholder6.svg" alt="" width="400" height="300" loading="lazy" />
+              <div class="gallery-item__veil" aria-hidden="true"><span class="gallery-item__veil-icon">✦</span></div>
+              <p class="gallery-surprise-label" id="gallery-label-5">
+                <span class="gallery-surprise-calm">Surprise in <span class="gallery-surprise-days">—</span> <span class="gallery-day-unit">days</span></span>
+              </p>
+              <span class="gallery-decor" aria-hidden="true"><span class="gallery-prism gallery-prism--f"></span></span>
+              <div class="gallery-progress">
+                <div
+                  class="gallery-progress__track"
+                  id="gallery-progress-track-5"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                  aria-label="Daily progress for memory 6"
+                >
+                  <div class="gallery-progress__fill" id="gallery-progress-fill-5" style="width: 0%"></div>
+                </div>
+                <p class="gallery-progress__meta"><span class="gallery-progress__count" id="gallery-progress-count-5">0</span> / <span class="gallery-progress__max" id="gallery-progress-max-5">—</span> days</p>
+                <button type="button" class="gallery-progress__btn" data-memory-index="5">Tap once for today</button>
+              </div>
+            </div>
+          </figure>
+        </article>
+      </div>
+    </section>
+
+    <!-- Surprise -->
+    <section id="surprise" class="surprise-section">
+      <h2 class="section-title">Surprise</h2>
+
+      <div class="surprise-locked glass" id="surprise-locked">
+        <div class="lock-icon" aria-hidden="true">🔒</div>
+        <p class="surprise-locked__title">Unwraps on your birthday</p>
+        <p class="surprise-locked__date">Unlocks on June 30, 2026</p>
+        <p class="surprise-locked__hint">Come back when the countdown reaches zero.</p>
+      </div>
+
+      <div class="surprise-open glass" id="surprise-open" hidden>
+        <h3 class="surprise-open__heading">Happy Birthday Madhu <span aria-hidden="true">🎉</span></h3>
+        <p class="surprise-open__message" id="surprise-message">
+          Today is yours — may this year wrap you in laughter, calm nights, and dreams that come true.
+          Thank you for the light you bring. Here’s to you, Shalini.
+        </p>
+        <div class="surprise-hearts" aria-hidden="true">
+          <span>💜</span><span>🌸</span><span>✨</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="site-footer">
+    <p>Made with care and love for <strong>Madhu Shalini</strong> · June 30</p>
+  </footer>
+
+  <!-- Shared SVG gradients (all butterflies reference these — no duplicate ids) -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="bf-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="bf-grad-wing-upper" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fdf2f8" />
+        <stop offset="35%" stop-color="#f9a8d4" />
+        <stop offset="70%" stop-color="#e879a9" />
+        <stop offset="100%" stop-color="#a855f7" />
+      </linearGradient>
+      <linearGradient id="bf-grad-wing-lower" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#f472b6" />
+        <stop offset="100%" stop-color="#9333ea" />
+      </linearGradient>
+      <radialGradient id="bf-grad-body" cx="40%" cy="35%" r="65%">
+        <stop offset="0%" stop-color="#5c4033" />
+        <stop offset="100%" stop-color="#1c1410" />
+      </radialGradient>
+    </defs>
+  </svg>
+
+  <!-- Premium butterfly: mirrored wings + body + antennae (cloned per letter) -->
+  <template id="butterfly-premium">
+    <svg
+      class="bf-svg"
+      width="44"
+      height="44"
+      viewBox="0 0 80 80"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g class="bf-3d">
+        <!-- Left wing pair -->
+        <g class="bf-wing bf-wing--left">
+          <path
+            class="bf-wing-path bf-wing-path--upper"
+            fill="url(#bf-grad-wing-upper)"
+            d="M40 34 C 14 20 4 24 8 44 C 10 54 22 52 36 42 C 38 40 40 36 40 34Z"
+          />
+          <path
+            class="bf-wing-path bf-wing-path--lower"
+            fill="url(#bf-grad-wing-lower)"
+            opacity="0.92"
+            d="M38 44 C 16 50 8 64 18 72 C 26 76 34 64 40 54 C 40 50 40 46 38 44Z"
+          />
+        </g>
+        <!-- Right wing pair (mirror) -->
+        <g class="bf-wing bf-wing--right">
+          <path
+            class="bf-wing-path bf-wing-path--upper"
+            fill="url(#bf-grad-wing-upper)"
+            d="M40 34 C 66 20 76 24 72 44 C 70 54 58 52 44 42 C 42 40 40 36 40 34Z"
+          />
+          <path
+            class="bf-wing-path bf-wing-path--lower"
+            fill="url(#bf-grad-wing-lower)"
+            opacity="0.92"
+            d="M42 44 C 64 50 72 64 62 72 C 54 76 46 64 40 54 C 40 50 40 46 42 44Z"
+          />
+        </g>
+        <!-- Body -->
+        <ellipse cx="40" cy="44" rx="5" ry="20" fill="url(#bf-grad-body)" />
+        <ellipse cx="40" cy="24" rx="8" ry="9" fill="#3d2c24" />
+        <!-- Antennae -->
+        <path
+          class="bf-ant"
+          d="M36 17 Q 30 8 24 4"
+          stroke="#2a1f18"
+          stroke-width="1.8"
+          fill="none"
+          stroke-linecap="round"
+        />
+        <path
+          class="bf-ant"
+          d="M44 17 Q 50 8 56 4"
+          stroke="#2a1f18"
+          stroke-width="1.8"
+          fill="none"
+          stroke-linecap="round"
+        />
+        <circle cx="24" cy="4" r="2.2" fill="#f472b6" />
+        <circle cx="56" cy="4" r="2.2" fill="#f472b6" />
+      </g>
+    </svg>
+  </template>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="astronomy-config.js"></script>
+  <script src="script.js?v=7"></script>
+</body>
+</html>

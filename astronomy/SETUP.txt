@@ -1,0 +1,31 @@
+Accurate star chart (AstronomyAPI)
+===================================
+
+This site can replace the decorative SVG with a real constellation map from
+https://www.astronomyapi.com
+
+1. Create a free account and an Application (Dashboard → Applications).
+
+2. Copy Application ID and Application Secret into astronomy-config.js
+   (copy from astronomy-config.example.js).
+
+3. CORS (required for browser calls):
+   In AstronomyAPI → your Application → Allowed Origin(s), add the EXACT origin
+   you use in the browser, including port:
+   - http://localhost:3000   (if you use port 3000)
+   - http://127.0.0.1:3000   (sometimes treated separately — add both if needed)
+   - https://yourname.netlify.app
+   file:// will NOT work — use a local HTTP server.
+
+4. Set MADHU_STAR_CHART_LAT and MADHU_STAR_CHART_LON (birth place or any
+   meaningful coordinates). Example: 17.3850, 78.4867
+
+5. MADHU_STAR_CHART_DATE — e.g. 2006-06-30 (birth) or 2026-06-30 (celebration).
+
+6. MADHU_STAR_CHART_CONSTELLATION — default "cnc" is Cancer (June 30 zodiac).
+   See constellation enums in AstronomyAPI docs to pick another.
+
+Security note: ID and Secret in a static site are visible to visitors. This is
+fine for a private gift link; for a public site use a tiny backend proxy.
+
+If keys are missing or the request fails, the fallback decorative SVG stays.

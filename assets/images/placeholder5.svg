@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="p5" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#6b3d7a"/>
+      <stop offset="100%" style="stop-color:#2d1b3d"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#p5)"/>
+  <polygon fill="#b794f6" fill-opacity="0.35" points="200,50 260,140 200,200 140,140"/>
+  <polygon fill="#e879a9" fill-opacity="0.25" points="200,80 230,130 200,170 170,130"/>
+  <text x="200" y="255" text-anchor="middle" fill="#fdf8fc" font-family="Georgia,serif" font-size="18" opacity="0.85">Memory 5</text>
+</svg>

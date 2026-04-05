@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="p3" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" style="stop-color:#4a2d5c"/>
+      <stop offset="50%" style="stop-color:#7c5a9e"/>
+      <stop offset="100%" style="stop-color:#3d2654"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#p3)"/>
+  <path fill="#f8b4d9" fill-opacity="0.25" d="M0 180 Q100 120 200 180 T400 160 V300 H0Z"/>
+  <text x="200" y="255" text-anchor="middle" fill="#fdf8fc" font-family="Georgia,serif" font-size="18" opacity="0.85">Memory 3</text>
+</svg>

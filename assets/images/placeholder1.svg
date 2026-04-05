@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3d2654"/>
+      <stop offset="100%" style="stop-color:#6b3d7a"/>
+    </linearGradient>
+    <linearGradient id="b" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8b4d9;stop-opacity:0.9"/>
+      <stop offset="100%" style="stop-color:#b794f6;stop-opacity:0.5"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#a)"/>
+  <circle cx="200" cy="140" r="90" fill="url(#b)" opacity="0.6"/>
+  <text x="200" y="255" text-anchor="middle" fill="#fdf8fc" font-family="Georgia,serif" font-size="18" opacity="0.85">Memory 1</text>
+</svg>

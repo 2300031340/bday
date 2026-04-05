@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0d0618"/>
+      <stop offset="45%" stop-color="#1a0f2e"/>
+      <stop offset="100%" stop-color="#12081f"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="50%" cy="35%" r="55%">
+      <stop offset="0%" stop-color="#3d2a5c" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#3d2a5c" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.2" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="starGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="0.8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="420" fill="url(#skyGrad)"/>
+  <rect width="1200" height="420" fill="url(#glowA)"/>
+  <path opacity="0.12" d="M80 200 Q400 120 700 180 T1120 160" stroke="#c4b5fd" stroke-width="48" stroke-linecap="round" filter="url(#softGlow)"/>
+  <g fill="#e8e0ff" opacity="0.45">
+    <circle cx="120" cy="80" r="1"/><circle cx="200" cy="140" r="0.8"/><circle cx="340" cy="60" r="1"/><circle cx="480" cy="100" r="0.7"/>
+    <circle cx="620" cy="50" r="1"/><circle cx="780" cy="120" r="0.8"/><circle cx="900" cy="70" r="1"/><circle cx="1040" cy="150" r="0.7"/>
+    <circle cx="150" cy="220" r="0.8"/><circle cx="290" cy="300" r="1"/><circle cx="410" cy="250" r="0.6"/><circle cx="550" cy="320" r="0.9"/>
+    <circle cx="690" cy="280" r="0.7"/><circle cx="830" cy="340" r="1"/><circle cx="970" cy="300" r="0.8"/><circle cx="1100" cy="360" r="0.7"/>
+    <circle cx="100" cy="320" r="0.6"/><circle cx="230" cy="380" r="0.7"/><circle cx="360" cy="350" r="0.5"/><circle cx="500" cy="400" r="0.6"/>
+    <circle cx="640" cy="380" r="0.8"/><circle cx="760" cy="40" r="0.6"/><circle cx="880" cy="200" r="0.7"/><circle cx="1020" cy="240" r="0.6"/>
+  </g>
+  <g filter="url(#starGlow)">
+    <line x1="280" y1="200" x2="380" y2="140" stroke="#d4c4f7" stroke-width="1.2" opacity="0.55"/>
+    <line x1="380" y1="140" x2="520" y2="220" stroke="#d4c4f7" stroke-width="1.2" opacity="0.55"/>
+    <line x1="520" y1="220" x2="660" y2="130" stroke="#d4c4f7" stroke-width="1.2" opacity="0.55"/>
+    <line x1="660" y1="130" x2="800" y2="210" stroke="#d4c4f7" stroke-width="1.2" opacity="0.55"/>
+    <line x1="800" y1="210" x2="920" y2="150" stroke="#d4c4f7" stroke-width="1.2" opacity="0.55"/>
+    <circle cx="280" cy="200" r="4" fill="#f8e8ff" stroke="#f472b6" stroke-width="0.5" opacity="0.95"/>
+    <circle cx="380" cy="140" r="3.5" fill="#fff5fb" stroke="#e879a9" stroke-width="0.5" opacity="0.95"/>
+    <circle cx="520" cy="220" r="4" fill="#f8e8ff" stroke="#b794f6" stroke-width="0.5" opacity="0.95"/>
+    <circle cx="660" cy="130" r="3.5" fill="#fff5fb" stroke="#f472b6" stroke-width="0.5" opacity="0.95"/>
+    <circle cx="800" cy="210" r="4" fill="#f8e8ff" stroke="#d4c4f7" stroke-width="0.5" opacity="0.95"/>
+    <circle cx="920" cy="150" r="5" fill="#fff" stroke="#f8b4d9" stroke-width="0.6" opacity="1"/>
+  </g>
+</svg>

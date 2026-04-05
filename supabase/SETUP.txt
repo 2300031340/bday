@@ -1,0 +1,22 @@
+Shared gallery progress (Supabase)
+===================================
+
+1. Create a free project at https://supabase.com
+
+2. Open SQL Editor, paste and run: supabase/schema.sql
+
+3. Project Settings → API: copy "Project URL" and "anon public" key
+
+4. Copy supabase-config.example.js to supabase-config.js
+
+5. Set MADHU_SUPABASE_URL and MADHU_SUPABASE_ANON_KEY in supabase-config.js
+
+6. Deploy your site with both index.html and supabase-config.js (same folder as script.js)
+
+Without supabase-config.js filled in, the site still works using only localStorage on each device.
+
+Reset testing data:
+- Add ?resetGallery=1 to the URL (clears this browser + uploads empty state if Supabase is configured)
+
+Security note: anon RLS policies allow anyone with your URL + anon key to read/write this one table.
+Keep the gift link private, or later add Supabase Auth / a secret edge function.
