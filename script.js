@@ -75,8 +75,6 @@
     var img = document.getElementById("star-chart-img");
     if (!img) return;
 
-    var appId = typeof window.MADHU_ASTRONOMY_APP_ID === "string" ? window.MADHU_ASTRONOMY_APP_ID.trim() : "";
-    var appSecret = typeof window.MADHU_ASTRONOMY_APP_SECRET === "string" ? window.MADHU_ASTRONOMY_APP_SECRET.trim() : "";
     var lat = parseFloat(window.MADHU_STAR_CHART_LAT);
     var lon = parseFloat(window.MADHU_STAR_CHART_LON);
     var dateStr =
@@ -92,15 +90,8 @@
         ? window.MADHU_STAR_CHART_STYLE.trim()
         : "navy";
 
-    if (!appId || !appSecret || isNaN(lat) || isNaN(lon)) {
-      return;
-    }
-
-    var auth;
-    try {
-      auth = btoa(appId + ":" + appSecret);
-    } catch (e) {
-      console.warn("Star chart: could not encode API credentials.");
+    if (isNaN(lat) || isNaN(lon)) {
+      console.warn("Star chart: missing required config (lat or lon)");
       return;
     }
 
@@ -126,27 +117,23 @@
       controller.abort();
     }, 60000);
 
-    fetch(STAR_CHART_API, {
+    // Use Vercel API proxy to avoid CORS issues
+    // Note: credentials are handled securely on the server via environment variables
+    fetch("/api/star-chart", {
       method: "POST",
       signal: controller.signal,
       headers: {
-        Authorization: "Basic " + auth,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        body: body,
+      }),
     })
       .then(function (res) {
-        return res.text().then(function (text) {
-          var json = null;
-          try {
-            json = text ? JSON.parse(text) : null;
-          } catch (e) {
-            throw new Error("Star chart API returned non-JSON: " + (text || "").slice(0, 120));
-          }
+        return res.json().then(function (json) {
           if (!res.ok) {
             var msg =
-              (json && (json.message || json.error || json.statusMessage)) ||
-              text ||
+              (json && (json.error || json.message || json.details?.message)) ||
               res.statusText ||
               "Request failed (" + res.status + ")";
             throw new Error(msg);
@@ -156,20 +143,76 @@
       })
       .then(function (json) {
         window.clearTimeout(timeoutId);
+        console.log("Star chart API response:", json);
         var url = starChartImageUrlFromResponse(json);
         if (!url) {
-          console.warn("Star chart unexpected JSON:", json);
+          console.warn("Star chart: Could NOT extract imageUrl from response. Response structure:", json);
           throw new Error("No imageUrl in API response");
         }
+        console.log("Star chart: Successfully got image URL:", url);
         img.alt =
           "Star chart: constellation " + constellation + " on " + dateStr + " (observer at " + lat + ", " + lon + ").";
         finishStarChartImage(img, url);
       })
       .catch(function (err) {
         window.clearTimeout(timeoutId);
-        console.warn("Star chart API:", err);
+        console.error("Star chart API FAILED:", err.message);
         clearStarChartLoading(img);
+        img.alt = "Star chart failed to load: " + err.message;
       });
+  }
+
+  var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var confettiFiredSession = sessionStorage.getItem("confetti-fired") === "1";
+  var countdownIntervalId = null;
+  var isMuted = false;
+  var typewriterStarted = false;
+
+  /**
+   * Load configuration from Vercel API if not already set locally.
+   * Local config (astronomy-config.js) takes precedence for development.
+   * Production falls back to /api/config which reads from environment variables.
+   */
+  function loadConfig() {
+    return new Promise(function (resolve) {
+      // Check if config is already loaded (from local astronomy-config.js)
+      if (
+        typeof window.MADHU_STAR_CHART_LAT === "string" ||
+        typeof window.MADHU_STAR_CHART_LON === "string"
+      ) {
+        // Already loaded locally
+        resolve();
+        return;
+      }
+
+      // Fetch config from API (production on Vercel)
+      fetch("/api/config")
+        .then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok) throw new Error(data.error || "Failed to load config");
+            return data;
+          });
+        })
+        .then(function (data) {
+          console.log("Loaded config from API:", data);
+          window.MADHU_STAR_CHART_LAT = data.MADHU_STAR_CHART_LAT;
+          window.MADHU_STAR_CHART_LON = data.MADHU_STAR_CHART_LON;
+          window.MADHU_STAR_CHART_DATE = data.MADHU_STAR_CHART_DATE;
+          window.MADHU_STAR_CHART_CONSTELLATION = data.MADHU_STAR_CHART_CONSTELLATION;
+          window.MADHU_STAR_CHART_STYLE = data.MADHU_STAR_CHART_STYLE;
+          resolve();
+        })
+        .catch(function (err) {
+          console.warn("Failed to load config from API, using defaults:", err);
+          // Use defaults
+          window.MADHU_STAR_CHART_LAT = "16.3067";
+          window.MADHU_STAR_CHART_LON = "80.4365";
+          window.MADHU_STAR_CHART_DATE = "2006-06-30";
+          window.MADHU_STAR_CHART_CONSTELLATION = "cnc";
+          window.MADHU_STAR_CHART_STYLE = "navy";
+          resolve();
+        });
+    });
   }
 
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1085,8 +1128,10 @@
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", function () {
+      loadConfig().then(init);
+    });
   } else {
-    init();
+    loadConfig().then(init);
   }
 })();
