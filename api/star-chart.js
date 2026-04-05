@@ -42,10 +42,14 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
+    console.log("AstronomyAPI response status:", response.status);
+    console.log("AstronomyAPI response data:", data);
+
     if (!response.ok) {
       return res.status(response.status).json({
         error: data.message || data.error || 'Star chart API error',
-        details: data
+        details: data,
+        statusCode: response.status
       });
     }
 

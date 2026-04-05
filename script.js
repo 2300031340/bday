@@ -144,6 +144,12 @@
       .then(function (json) {
         window.clearTimeout(timeoutId);
         console.log("Star chart API response:", json);
+        
+        if (json.statusCode === 403 || json.error === "Star chart API error") {
+          console.error("AstronomyAPI returned error. Full response:", json);
+          throw new Error("API Error: " + (json.details?.message || json.error || "Unknown error"));
+        }
+        
         var url = starChartImageUrlFromResponse(json);
         if (!url) {
           console.warn("Star chart: Could NOT extract imageUrl from response. Response structure:", json);
