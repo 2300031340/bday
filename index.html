@@ -367,6 +367,163 @@
               Play today’s game
             </button>
           </div>
+          <div id="daily-next-gift-area" class="daily-next-gift" hidden>
+            <p class="daily-next-gift__teaser" id="daily-next-gift-teaser">
+              How was today’s gift? Anyway, get ready for tomorrow’s gift. Don’t forget to grab your earbuds and be ready to come here again sharp at 8 AM.
+            </p>
+
+            <div id="daily-initial-feedback-wrap" class="daily-feedback-block" hidden>
+              <label class="daily-feedback-block__label" for="daily-initial-feedback-input">
+                Leave a tiny feedback for today’s gift:
+              </label>
+              <textarea
+                id="daily-initial-feedback-input"
+                class="daily-feedback-block__input"
+                rows="3"
+                maxlength="500"
+                placeholder="Type your feedback..."
+              ></textarea>
+              <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" id="daily-initial-feedback-submit">
+                Submit feedback
+              </button>
+              <p class="daily-feedback-block__status" id="daily-initial-feedback-status" hidden></p>
+            </div>
+
+            <div id="song-question-area" class="song-question" hidden>
+              <p class="song-question__prompt">Did anyone ever make a song for you?</p>
+              <div class="song-question__actions">
+                <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" id="song-answer-yes">Yes</button>
+                <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" id="song-answer-no">No</button>
+              </div>
+              <p class="song-question__reply" id="song-question-reply" hidden></p>
+            </div>
+
+            <div id="song-time-lock" class="song-time-lock glass" hidden>
+              <p class="song-time-lock__title">Locked until 8:00 AM</p>
+              <p class="song-time-lock__text">Tomorrow morning at 8:00 AM this section will open.</p>
+              <p class="song-time-lock__countdown" id="song-time-lock-countdown">Checking unlock time...</p>
+            </div>
+
+            <div id="song-tracks-area" class="song-tracks" hidden>
+              <p class="song-tracks__title">Get your earphones ready buddy 🎧</p>
+              <div class="song-track-item">
+                <p class="song-track-item__label">Track 1 — for everyone</p>
+                <audio id="song-track-1" controls preload="none" src="assets/audio/track 1.mp3"></audio>
+              </div>
+              <div class="song-track-item">
+                <p class="song-track-item__label">Track 2 — only you can listen</p>
+                <audio id="song-track-2" controls preload="none" src="assets/audio/track 2.mp3"></audio>
+              </div>
+
+              <div class="daily-feedback-block daily-feedback-block--qa">
+                <p class="song-feedback-wizard__title">Bee lovely while giving feedback too 💜</p>
+                <p class="song-feedback-wizard__progress" id="song-feedback-progress">Question 1 of 5</p>
+                <div id="song-feedback-wizard">
+                  <div class="song-feedback-step" data-song-step="1">
+                    <label class="daily-feedback-block__label" for="song-feedback-track1">
+                      1) Track 1 (for everyone): How did it make you feel?
+                    </label>
+                    <textarea
+                      id="song-feedback-track1"
+                      class="daily-feedback-block__input"
+                      rows="2"
+                      maxlength="600"
+                      placeholder="Your feeling for Track 1..."
+                    ></textarea>
+                    <div class="song-feedback-step__actions song-feedback-step__actions--end">
+                      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" data-song-next>
+                        Next
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="song-feedback-step" data-song-step="2" hidden>
+                    <label class="daily-feedback-block__label" for="song-feedback-track2">
+                      2) Track 2 (only you can listen): How did it make you feel?
+                    </label>
+                    <textarea
+                      id="song-feedback-track2"
+                      class="daily-feedback-block__input"
+                      rows="2"
+                      maxlength="600"
+                      placeholder="Your feeling for Track 2..."
+                    ></textarea>
+                    <div class="song-feedback-step__actions">
+                      <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" data-song-back>
+                        Back
+                      </button>
+                      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" data-song-next>
+                        Next
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="song-feedback-step" data-song-step="3" hidden>
+                    <label class="daily-feedback-block__label" for="song-feedback-favorite">
+                      3) Which track did you like more?
+                    </label>
+                    <select id="song-feedback-favorite" class="daily-feedback-block__input daily-feedback-block__select">
+                      <option value="">Select one</option>
+                      <option value="track1">Track 1 — for everyone</option>
+                      <option value="track2">Track 2 — only you can listen</option>
+                      <option value="both">Both equally</option>
+                    </select>
+                    <div class="song-feedback-step__actions">
+                      <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" data-song-back>
+                        Back
+                      </button>
+                      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" data-song-next>
+                        Next
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="song-feedback-step" data-song-step="4" hidden>
+                    <label class="daily-feedback-block__label" for="song-feedback-oneword">
+                      4) One word for me:
+                    </label>
+                    <input
+                      id="song-feedback-oneword"
+                      class="daily-feedback-block__input"
+                      type="text"
+                      maxlength="40"
+                      placeholder="One word only"
+                    />
+                    <div class="song-feedback-step__actions">
+                      <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" data-song-back>
+                        Back
+                      </button>
+                      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" data-song-next>
+                        Next
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="song-feedback-step" data-song-step="5" hidden>
+                    <label class="daily-feedback-block__label" for="song-feedback-extra">
+                      5) Anything else you want to say? (optional)
+                    </label>
+                    <textarea
+                      id="song-feedback-extra"
+                      class="daily-feedback-block__input"
+                      rows="2"
+                      maxlength="1000"
+                      placeholder="Optional extra note..."
+                    ></textarea>
+                    <div class="song-feedback-step__actions">
+                      <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" data-song-back>
+                        Back
+                      </button>
+                      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" id="song-feedback-submit">
+                        Send song feedback
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p class="daily-feedback-block__status" id="song-feedback-status" hidden></p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -474,6 +631,20 @@
     </div>
   </div>
 
+  <div id="daily-update-modal" class="daily-surprise-modal" hidden role="dialog" aria-modal="true" aria-labelledby="daily-update-title">
+    <div class="daily-surprise-modal__backdrop" id="daily-update-backdrop" aria-hidden="true"></div>
+    <div class="daily-surprise-modal__panel glass">
+      <h2 id="daily-update-title" class="daily-surprise__title">Something new has arrived</h2>
+      <p class="daily-surprise__lead">Go to Daily rewards and drop a quick feedback 💌</p>
+      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" id="daily-update-go">
+        Go to daily rewards
+      </button>
+      <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" id="daily-update-close">
+        Later
+      </button>
+    </div>
+  </div>
+
   <!-- Shared SVG gradients (all butterflies reference these — no duplicate ids) -->
   <svg xmlns="http://www.w3.org/2000/svg" class="bf-defs" aria-hidden="true" focusable="false">
     <defs>
@@ -561,6 +732,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
   <script src="astronomy-config.js"></script>
-  <script src="script.js?v=11"></script>
+  <script src="script.js?v=16"></script>
 </body>
 </html>

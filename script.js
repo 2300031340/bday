@@ -176,6 +176,7 @@
   var confettiFiredSession = sessionStorage.getItem("confetti-fired") === "1";
   var countdownIntervalId = null;
   var isMuted = false;
+  var bgAudioForcedMuteBySong = false;
   var typewriterStarted = false;
 
   var els = {
@@ -641,6 +642,13 @@
   /** One completion per calendar day (local); cleared next day automatically. */
   var DAILY_SURPRISE_LS = "madhu_daily_surprise_done_date";
   var DAILY_QUIZ_ANSWER = "v";
+  var DAILY_PHASE2_UNLOCKED_LS = "madhu_daily_phase2_unlocked";
+  var DAILY_INITIAL_FEEDBACK_DONE_LS = "madhu_daily_initial_feedback_done";
+  var DAILY_SONG_ANSWER_LS = "madhu_daily_song_answer";
+  var DAILY_SONG_FEEDBACK_DONE_LS = "madhu_daily_song_feedback_done";
+  var DAILY_UPDATE_POPUP_DATE_LS = "madhu_daily_update_popup_date";
+  var SONG_UNLOCK_HOUR = 8;
+  var songUnlockTickId = null;
 
   function getDailySurpriseDateKey() {
     var d = new Date();
@@ -653,6 +661,17 @@
     );
   }
 
+  function parseDateKeyToLocalDate(dateKey) {
+    if (!dateKey || typeof dateKey !== "string") return null;
+    var parts = dateKey.split("-");
+    if (parts.length !== 3) return null;
+    var y = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10);
+    var d = parseInt(parts[2], 10);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+    return new Date(y, m - 1, d, 0, 0, 0, 0);
+  }
+
   function hasCompletedDailySurpriseToday() {
     try {
       return localStorage.getItem(DAILY_SURPRISE_LS) === getDailySurpriseDateKey();
@@ -661,9 +680,75 @@
     }
   }
 
+  function isDailyPhase2Unlocked() {
+    try {
+      return localStorage.getItem(DAILY_PHASE2_UNLOCKED_LS) === "1" || hasCompletedDailySurpriseToday();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getSongUnlockDateTime() {
+    try {
+      var day1Key = localStorage.getItem(DAILY_SURPRISE_LS) || "";
+      var base = parseDateKeyToLocalDate(day1Key);
+      if (!base) return null;
+      return new Date(base.getFullYear(), base.getMonth(), base.getDate() + 1, SONG_UNLOCK_HOUR, 0, 0, 0);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function isSongSectionUnlockedNow() {
+    var unlockAt = getSongUnlockDateTime();
+    if (!unlockAt) return false;
+    return Date.now() >= unlockAt.getTime();
+  }
+
+  function formatTimeDiff(ms) {
+    var total = Math.max(0, Math.floor(ms / 1000));
+    var hrs = Math.floor(total / 3600);
+    var mins = Math.floor((total % 3600) / 60);
+    var secs = total % 60;
+    return String(hrs).padStart(2, "0") + ":" + String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+  }
+
+  function renderSongTimeLock() {
+    var lockBox = document.getElementById("song-time-lock");
+    var cd = document.getElementById("song-time-lock-countdown");
+    if (!lockBox || !cd) return;
+    if (!isDailyPhase2Unlocked() || !isDailyInitialFeedbackDone()) {
+      lockBox.hidden = true;
+      return;
+    }
+    var unlockAt = getSongUnlockDateTime();
+    if (!unlockAt) {
+      lockBox.hidden = true;
+      return;
+    }
+    var left = unlockAt.getTime() - Date.now();
+    if (left <= 0) {
+      lockBox.hidden = true;
+      return;
+    }
+    lockBox.hidden = false;
+    cd.textContent = "Opens in " + formatTimeDiff(left);
+  }
+
+  function ensureSongUnlockTicker() {
+    if (songUnlockTickId) return;
+    songUnlockTickId = window.setInterval(function () {
+      renderSongTimeLock();
+      if (isDailyPhase2Unlocked() && isDailyInitialFeedbackDone() && isSongSectionUnlockedNow()) {
+        renderDailySongAnswerState();
+      }
+    }, 1000);
+  }
+
   function markDailySurpriseComplete() {
     try {
       localStorage.setItem(DAILY_SURPRISE_LS, getDailySurpriseDateKey());
+      localStorage.setItem(DAILY_PHASE2_UNLOCKED_LS, "1");
     } catch (e) {}
   }
 
@@ -673,6 +758,11 @@
       var params = new URLSearchParams(window.location.search);
       if (params.get("resetDailySurprise") !== "1") return;
       localStorage.removeItem(DAILY_SURPRISE_LS);
+      localStorage.removeItem(DAILY_PHASE2_UNLOCKED_LS);
+      localStorage.removeItem(DAILY_INITIAL_FEEDBACK_DONE_LS);
+      localStorage.removeItem(DAILY_SONG_ANSWER_LS);
+      localStorage.removeItem(DAILY_SONG_FEEDBACK_DONE_LS);
+      localStorage.removeItem(DAILY_UPDATE_POPUP_DATE_LS);
       var cleanUrl = window.location.pathname + window.location.hash;
       window.history.replaceState({}, document.title, cleanUrl);
     } catch (e) {}
@@ -694,6 +784,7 @@
   }
 
   function openDailySurpriseModal() {
+    if (isDailyPhase2Unlocked()) return;
     if (hasCompletedDailySurpriseToday()) return;
     if (!document.body.classList.contains("body--revealed")) return;
     var modal = document.getElementById("daily-surprise-modal");
@@ -715,6 +806,10 @@
   }
 
   function openDailySurpriseIfNeeded() {
+    if (isDailyPhase2Unlocked()) {
+      openDailyUpdateModalIfNeeded();
+      return;
+    }
     if (hasCompletedDailySurpriseToday()) return;
     openDailySurpriseModal();
   }
@@ -722,11 +817,21 @@
   /** Open from the Daily section card: quiz if not done today, otherwise replay today’s video. */
   function openDailySurpriseFromSection() {
     if (!document.body.classList.contains("body--revealed")) return;
+    if (isDailyPhase2Unlocked()) {
+      scrollToDailySection();
+      return;
+    }
     if (hasCompletedDailySurpriseToday()) {
       openDailyRewardVideoLayer();
       return;
     }
     openDailySurpriseModal();
+  }
+
+  function scrollToDailySection() {
+    var daily = document.getElementById("daily");
+    if (!daily) return;
+    daily.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function submitDailyQuiz() {
@@ -871,9 +976,334 @@
     document.body.classList.remove("body--daily-reward-open");
   }
 
+  function isDailyInitialFeedbackDone() {
+    try {
+      return localStorage.getItem(DAILY_INITIAL_FEEDBACK_DONE_LS) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isDailySongFeedbackDone() {
+    try {
+      return localStorage.getItem(DAILY_SONG_FEEDBACK_DONE_LS) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getDailySongAnswer() {
+    try {
+      return localStorage.getItem(DAILY_SONG_ANSWER_LS) || "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function setDailySongAnswer(v) {
+    try {
+      localStorage.setItem(DAILY_SONG_ANSWER_LS, v);
+    } catch (e) {}
+  }
+
+  function setDailyInitialFeedbackDone() {
+    try {
+      localStorage.setItem(DAILY_INITIAL_FEEDBACK_DONE_LS, "1");
+    } catch (e) {}
+  }
+
+  function setDailySongFeedbackDone() {
+    try {
+      localStorage.setItem(DAILY_SONG_FEEDBACK_DONE_LS, "1");
+    } catch (e) {}
+  }
+
+  function saveDailyFeedbackToSupabase(category, feedbackText, meta) {
+    var client = getSupabaseClient();
+    if (!client) return Promise.resolve();
+    return client
+      .from("daily_feedback")
+      .insert({
+        day_key: getDailySurpriseDateKey(),
+        category: category,
+        feedback_text: feedbackText,
+        meta: meta || null,
+        created_at: new Date().toISOString(),
+      })
+      .then(function (res) {
+        if (res.error) throw res.error;
+      });
+  }
+
+  function getSongReplyText(answer) {
+    if (answer === "yes") {
+      return (
+        "Oh... someone already made a song for you? \ud83d\udc40\n\n" +
+        "It's okay...\n\n" +
+        "I got your back \ud83d\ude0c\n\n" +
+        "From now on, you don't need anyone else doing that...\n\n" +
+        "Just listen to this one \u2764\ufe0f\ud83c\udfb6"
+      );
+    }
+    return (
+      "No one ever made a song for you?\n\n" +
+      "That's kinda surprising...\n\n" +
+      "But it's fine...\n\n" +
+      "I got your back \ud83d\ude0c\n\n" +
+      "You won't be missing out anymore \u2764\ufe0f\ud83c\udfb6"
+    );
+  }
+
+  function closeDailyUpdateModal() {
+    var modal = document.getElementById("daily-update-modal");
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove("body--daily-surprise-open");
+  }
+
+  function openDailyUpdateModalIfNeeded() {
+    if (!isDailyPhase2Unlocked()) return;
+    var today = getDailySurpriseDateKey();
+    var lastShown = "";
+    try {
+      lastShown = localStorage.getItem(DAILY_UPDATE_POPUP_DATE_LS) || "";
+    } catch (e) {}
+    if (lastShown === today) return;
+    var modal = document.getElementById("daily-update-modal");
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.classList.add("body--daily-surprise-open");
+    try {
+      localStorage.setItem(DAILY_UPDATE_POPUP_DATE_LS, today);
+    } catch (e) {}
+  }
+
+  function renderDailySongAnswerState() {
+    var questionWrap = document.getElementById("song-question-area");
+    var reply = document.getElementById("song-question-reply");
+    var tracks = document.getElementById("song-tracks-area");
+    var lockWrap = document.getElementById("song-time-lock");
+    var songStatus = document.getElementById("song-feedback-status");
+    if (!questionWrap || !reply || !tracks) return;
+    if (!isSongSectionUnlockedNow()) {
+      questionWrap.hidden = true;
+      tracks.hidden = true;
+      if (lockWrap) lockWrap.hidden = false;
+      renderSongTimeLock();
+      return;
+    }
+    if (lockWrap) lockWrap.hidden = true;
+    var ans = getDailySongAnswer();
+    if (!ans) {
+      questionWrap.hidden = false;
+      reply.hidden = true;
+      tracks.hidden = true;
+      if (songStatus) {
+        songStatus.hidden = true;
+      }
+      return;
+    }
+    questionWrap.hidden = false;
+    reply.hidden = false;
+    reply.textContent = getSongReplyText(ans);
+    tracks.hidden = false;
+    initSongFeedbackWizard();
+    if (songStatus && isDailySongFeedbackDone()) {
+      songStatus.hidden = false;
+      songStatus.textContent = "Your song feedback is already saved. Thank you 💜";
+    }
+  }
+
+  var songWizardStep = 1;
+  var songWizardBound = false;
+
+  function setSongFeedbackStatusMessage(msg) {
+    var status = document.getElementById("song-feedback-status");
+    if (!status) return;
+    if (!msg) {
+      status.hidden = true;
+      status.textContent = "";
+      return;
+    }
+    status.hidden = false;
+    status.textContent = msg;
+  }
+
+  function validateSongWizardStep(step) {
+    if (step === 1) {
+      var t1 = document.getElementById("song-feedback-track1");
+      if (!t1 || !(t1.value || "").trim()) return "Please tell how Track 1 made you feel.";
+    } else if (step === 2) {
+      var t2 = document.getElementById("song-feedback-track2");
+      if (!t2 || !(t2.value || "").trim()) return "Please tell how Track 2 made you feel.";
+    } else if (step === 3) {
+      var fav = document.getElementById("song-feedback-favorite");
+      if (!fav || !(fav.value || "").trim()) return "Please choose your favorite track.";
+    } else if (step === 4) {
+      var ow = document.getElementById("song-feedback-oneword");
+      var oneWord = ow ? (ow.value || "").trim() : "";
+      if (!oneWord) return "Please share one word for me.";
+      if (/\s/.test(oneWord)) return "Please keep it to one word only.";
+    }
+    return "";
+  }
+
+  function showSongFeedbackWizardStep(step) {
+    var wizard = document.getElementById("song-feedback-wizard");
+    if (!wizard) return;
+    if (step < 1) step = 1;
+    if (step > 5) step = 5;
+    songWizardStep = step;
+    var progress = document.getElementById("song-feedback-progress");
+    if (progress) progress.textContent = "Question " + step + " of 5";
+    wizard.querySelectorAll(".song-feedback-step").forEach(function (el) {
+      var n = parseInt(el.getAttribute("data-song-step"), 10);
+      el.hidden = n !== step;
+    });
+  }
+
+  function initSongFeedbackWizard() {
+    var wizard = document.getElementById("song-feedback-wizard");
+    if (!wizard) return;
+    if (!songWizardBound) {
+      songWizardBound = true;
+      wizard.addEventListener("click", function (e) {
+        var nextBtn = e.target.closest("[data-song-next]");
+        if (nextBtn) {
+          var err = validateSongWizardStep(songWizardStep);
+          if (err) {
+            setSongFeedbackStatusMessage(err);
+            return;
+          }
+          setSongFeedbackStatusMessage("");
+          showSongFeedbackWizardStep(songWizardStep + 1);
+          return;
+        }
+        var backBtn = e.target.closest("[data-song-back]");
+        if (backBtn) {
+          setSongFeedbackStatusMessage("");
+          showSongFeedbackWizardStep(songWizardStep - 1);
+        }
+      });
+    }
+    if (isDailySongFeedbackDone()) {
+      showSongFeedbackWizardStep(5);
+      return;
+    }
+    showSongFeedbackWizardStep(1);
+  }
+
+  function renderDailyPhase2UI() {
+    var nextGiftArea = document.getElementById("daily-next-gift-area");
+    var initialWrap = document.getElementById("daily-initial-feedback-wrap");
+    var questionWrap = document.getElementById("song-question-area");
+    var sectionBtn = document.getElementById("daily-surprise-section-play");
+    if (!nextGiftArea || !initialWrap || !questionWrap) return;
+    if (!isDailyPhase2Unlocked()) {
+      nextGiftArea.hidden = true;
+      return;
+    }
+    nextGiftArea.hidden = false;
+    if (sectionBtn) sectionBtn.hidden = true;
+    if (!isDailyInitialFeedbackDone()) {
+      initialWrap.hidden = false;
+      questionWrap.hidden = true;
+      renderSongTimeLock();
+      var tracks0 = document.getElementById("song-tracks-area");
+      if (tracks0) tracks0.hidden = true;
+      return;
+    }
+    initialWrap.hidden = true;
+    renderSongTimeLock();
+    renderDailySongAnswerState();
+  }
+
+  function submitInitialDailyFeedback() {
+    var input = document.getElementById("daily-initial-feedback-input");
+    var status = document.getElementById("daily-initial-feedback-status");
+    if (!input || !status) return;
+    var txt = (input.value || "").trim();
+    if (!txt) {
+      status.hidden = false;
+      status.textContent = "Please type a small feedback first.";
+      return;
+    }
+    status.hidden = false;
+    status.textContent = "Saving feedback...";
+    saveDailyFeedbackToSupabase("day1_feedback", txt, { source: "daily_update_phase2" })
+      .then(function () {
+        setDailyInitialFeedbackDone();
+        status.textContent = "Feedback saved. Thank you \ud83d\udc9c";
+        renderDailyPhase2UI();
+      })
+      .catch(function () {
+        status.textContent = "Could not save to cloud now. Please try again.";
+      });
+  }
+
+  function submitSongFeedback() {
+    var track1Input = document.getElementById("song-feedback-track1");
+    var track2Input = document.getElementById("song-feedback-track2");
+    var favoriteInput = document.getElementById("song-feedback-favorite");
+    var oneWordInput = document.getElementById("song-feedback-oneword");
+    var extraInput = document.getElementById("song-feedback-extra");
+    var status = document.getElementById("song-feedback-status");
+    if (!track1Input || !track2Input || !favoriteInput || !oneWordInput || !extraInput || !status) return;
+    var track1Feel = (track1Input.value || "").trim();
+    var track2Feel = (track2Input.value || "").trim();
+    var favorite = (favoriteInput.value || "").trim();
+    var oneWord = (oneWordInput.value || "").trim();
+    var extra = (extraInput.value || "").trim();
+    if (!track1Feel || !track2Feel || !favorite || !oneWord) {
+      setSongFeedbackStatusMessage("Please answer all required questions (1-4).");
+      return;
+    }
+    if (/\s/.test(oneWord)) {
+      setSongFeedbackStatusMessage("The 'one word' answer should be a single word only.");
+      return;
+    }
+    var compactSummary =
+      "Track1 feeling: " +
+      track1Feel +
+      " | Track2 feeling: " +
+      track2Feel +
+      " | Favorite: " +
+      favorite +
+      " | One word: " +
+      oneWord +
+      (extra ? " | Extra: " + extra : "");
+    setSongFeedbackStatusMessage("Saving song feedback...");
+    saveDailyFeedbackToSupabase("song_feedback", compactSummary, {
+      song_answer: getDailySongAnswer() || null,
+      track1_feeling: track1Feel,
+      track2_feeling: track2Feel,
+      favorite_track: favorite,
+      one_word_for_me: oneWord,
+      extra_note: extra || null,
+    })
+      .then(function () {
+        setDailySongFeedbackDone();
+        setSongFeedbackStatusMessage("Saved. So happy you listened \ud83c\udfb6");
+      })
+      .catch(function () {
+        setSongFeedbackStatusMessage("Could not save to cloud now. Please try again.");
+      });
+  }
+
   function initDailyChallengeDescription() {
     var desc = document.getElementById("challenge-description");
     var sectionBtn = document.getElementById("daily-surprise-section-play");
+    if (isDailyPhase2Unlocked()) {
+      if (desc) {
+        desc.textContent = "Today's gift is done. Open the update below for the next surprise.";
+      }
+      if (sectionBtn) {
+        sectionBtn.textContent = "Open daily rewards update";
+        sectionBtn.hidden = false;
+      }
+      renderDailyPhase2UI();
+      return;
+    }
     if (hasCompletedDailySurpriseToday()) {
       if (desc) {
         desc.textContent =
@@ -887,6 +1317,7 @@
       }
       if (sectionBtn) sectionBtn.textContent = "Play today’s game";
     }
+    renderDailyPhase2UI();
   }
 
   function initDailyChallenge() {
@@ -910,6 +1341,13 @@
     var closeVid = document.getElementById("daily-reward-close");
     var rewardVideo = document.getElementById("daily-reward-video");
     var sectionPlay = document.getElementById("daily-surprise-section-play");
+    var updateBackdrop = document.getElementById("daily-update-backdrop");
+    var updateGo = document.getElementById("daily-update-go");
+    var updateClose = document.getElementById("daily-update-close");
+    var initialFeedbackSubmit = document.getElementById("daily-initial-feedback-submit");
+    var songYes = document.getElementById("song-answer-yes");
+    var songNo = document.getElementById("song-answer-no");
+    var songFeedbackSubmit = document.getElementById("song-feedback-submit");
 
     if (sectionPlay) {
       sectionPlay.addEventListener("click", openDailySurpriseFromSection);
@@ -934,6 +1372,42 @@
     }
     if (envelopeBtn) envelopeBtn.addEventListener("click", onEnvelopeOpen);
     if (closeVid) closeVid.addEventListener("click", closeDailyRewardVideoLayer);
+    if (updateBackdrop) updateBackdrop.addEventListener("click", closeDailyUpdateModal);
+    if (updateClose) updateClose.addEventListener("click", closeDailyUpdateModal);
+    if (updateGo) {
+      updateGo.addEventListener("click", function () {
+        closeDailyUpdateModal();
+        scrollToDailySection();
+        renderDailyPhase2UI();
+        var initInput = document.getElementById("daily-initial-feedback-input");
+        if (initInput && !isDailyInitialFeedbackDone()) {
+          window.setTimeout(function () {
+            initInput.focus();
+          }, 550);
+        }
+      });
+    }
+    if (initialFeedbackSubmit) {
+      initialFeedbackSubmit.addEventListener("click", submitInitialDailyFeedback);
+    }
+    if (songYes) {
+      songYes.addEventListener("click", function () {
+        setDailySongAnswer("yes");
+        renderDailySongAnswerState();
+      });
+    }
+    if (songNo) {
+      songNo.addEventListener("click", function () {
+        setDailySongAnswer("no");
+        renderDailySongAnswerState();
+      });
+    }
+    if (songFeedbackSubmit) {
+      songFeedbackSubmit.addEventListener("click", submitSongFeedback);
+    }
+    setupSongTracksAutoMute();
+    updateBgMuteBySongTracks();
+    ensureSongUnlockTicker();
     if (rewardVideo) {
       rewardVideo.addEventListener("error", function () {
         var fb = document.getElementById("daily-reward-fallback");
@@ -950,6 +1424,10 @@
       var layer = document.getElementById("daily-reward-layer");
       if (layer && !layer.hidden) {
         closeDailyRewardVideoLayer();
+      }
+      var updateModal = document.getElementById("daily-update-modal");
+      if (updateModal && !updateModal.hidden) {
+        closeDailyUpdateModal();
       }
     });
   }
@@ -1003,8 +1481,29 @@
   function applyMuteToAudio() {
     var a = els.bgAudio;
     if (!a) return;
-    a.muted = isMuted;
+    a.muted = isMuted || bgAudioForcedMuteBySong;
     a.loop = true;
+  }
+
+  function updateBgMuteBySongTracks() {
+    var t1 = document.getElementById("song-track-1");
+    var t2 = document.getElementById("song-track-2");
+    var playing1 = !!(t1 && !t1.paused && !t1.ended);
+    var playing2 = !!(t2 && !t2.paused && !t2.ended);
+    bgAudioForcedMuteBySong = playing1 || playing2;
+    applyMuteToAudio();
+  }
+
+  function setupSongTracksAutoMute() {
+    var t1 = document.getElementById("song-track-1");
+    var t2 = document.getElementById("song-track-2");
+    if (!t1 && !t2) return;
+    [t1, t2].forEach(function (t) {
+      if (!t) return;
+      ["play", "playing", "pause", "ended", "emptied", "abort", "stalled"].forEach(function (ev) {
+        t.addEventListener(ev, updateBgMuteBySongTracks);
+      });
+    });
   }
 
   function tryPlayBgAudio() {
