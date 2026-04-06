@@ -608,6 +608,352 @@
     syncAllGalleryProgressUI();
   }
 
+  // Daily wish messages
+  var DAILY_WISHES = [
+    "May today bring you a smile that reaches your eyes and warmth that fills your heart.",
+    "Here's to small joys, quiet moments, and the magic of being exactly who you are.",
+    "Wishing you a day filled with gentle surprises and the comfort of knowing you're loved.",
+    "May your path be lined with kindness, your heart with peace, and your day with delight.",
+    "Today, may you feel the beauty of your own light shining brightly for all to see.",
+    "Wishing you moments of pure joy, laughter that echoes, and dreams that feel within reach.",
+    "May today wrap you in comfort, surround you with care, and remind you of your worth.",
+    "Here's to new beginnings, fresh perspectives, and the courage to embrace them both.",
+    "Wishing you a day of gentle adventures and the peace that comes from being true to yourself.",
+    "May your heart be light, your spirit bright, and your day filled with unexpected happiness."
+  ];
+
+  function getDaysUntilBirthday() {
+    var now = new Date();
+    var diffMs = BIRTHDAY - now;
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  }
+
+  function initDailyWish() {
+    var daysLeft = getDaysUntilBirthday();
+    if (daysLeft <= 0) {
+      document.getElementById("daily-message").textContent = "Happy Birthday! Today is your day to shine.";
+      return;
+    }
+    var messageIndex = (daysLeft - 1) % DAILY_WISHES.length;
+    document.getElementById("daily-message").textContent = DAILY_WISHES[messageIndex];
+  }
+
+  /** One completion per calendar day (local); cleared next day automatically. */
+  var DAILY_SURPRISE_LS = "madhu_daily_surprise_done_date";
+  var DAILY_QUIZ_ANSWER = "v";
+
+  function getDailySurpriseDateKey() {
+    var d = new Date();
+    return (
+      String(d.getFullYear()) +
+      "-" +
+      String(d.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(d.getDate()).padStart(2, "0")
+    );
+  }
+
+  function hasCompletedDailySurpriseToday() {
+    try {
+      return localStorage.getItem(DAILY_SURPRISE_LS) === getDailySurpriseDateKey();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function markDailySurpriseComplete() {
+    try {
+      localStorage.setItem(DAILY_SURPRISE_LS, getDailySurpriseDateKey());
+    } catch (e) {}
+  }
+
+  function maybeResetDailySurpriseFromQuery() {
+    try {
+      if (typeof URLSearchParams === "undefined") return;
+      var params = new URLSearchParams(window.location.search);
+      if (params.get("resetDailySurprise") !== "1") return;
+      localStorage.removeItem(DAILY_SURPRISE_LS);
+      var cleanUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, cleanUrl);
+    } catch (e) {}
+  }
+
+  function showDailySurpriseStep(stepId) {
+    ["daily-step-intro", "daily-step-quiz", "daily-step-envelope"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.hidden = id !== stepId;
+    });
+  }
+
+  function closeDailySurpriseModal() {
+    var modal = document.getElementById("daily-surprise-modal");
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove("body--daily-surprise-open");
+  }
+
+  function openDailySurpriseModal() {
+    if (hasCompletedDailySurpriseToday()) return;
+    if (!document.body.classList.contains("body--revealed")) return;
+    var modal = document.getElementById("daily-surprise-modal");
+    if (!modal) return;
+    showDailySurpriseStep("daily-step-intro");
+    var input = document.getElementById("daily-quiz-input");
+    if (input) input.value = "";
+    var fb = document.getElementById("daily-quiz-feedback");
+    if (fb) {
+      fb.hidden = true;
+      fb.textContent = "";
+    }
+    var env = document.getElementById("daily-envelope-btn");
+    if (env) env.classList.remove("daily-envelope--open");
+    modal.hidden = false;
+    document.body.classList.add("body--daily-surprise-open");
+    var playBtn = document.getElementById("daily-surprise-play");
+    if (playBtn) playBtn.focus();
+  }
+
+  function openDailySurpriseIfNeeded() {
+    if (hasCompletedDailySurpriseToday()) return;
+    openDailySurpriseModal();
+  }
+
+  /** Open from the Daily section card: quiz if not done today, otherwise replay today’s video. */
+  function openDailySurpriseFromSection() {
+    if (!document.body.classList.contains("body--revealed")) return;
+    if (hasCompletedDailySurpriseToday()) {
+      openDailyRewardVideoLayer();
+      return;
+    }
+    openDailySurpriseModal();
+  }
+
+  function submitDailyQuiz() {
+    var input = document.getElementById("daily-quiz-input");
+    var fb = document.getElementById("daily-quiz-feedback");
+    if (!input || !fb) return;
+    var ans = (input.value || "").trim().toLowerCase();
+    if (ans === DAILY_QUIZ_ANSWER) {
+      fb.hidden = true;
+      showDailySurpriseStep("daily-step-envelope");
+      return;
+    }
+    fb.hidden = false;
+    fb.textContent = "Not quite — try again 💜";
+  }
+
+  function onEnvelopeOpen() {
+    var btn = document.getElementById("daily-envelope-btn");
+    if (!btn || btn.classList.contains("daily-envelope--open")) return;
+    btn.classList.add("daily-envelope--open");
+    window.setTimeout(function () {
+      closeDailySurpriseModal();
+      openDailyRewardVideoLayer();
+    }, 450);
+  }
+
+  function getDailyRewardFullscreenElement() {
+    return (
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.msFullscreenElement ||
+      null
+    );
+  }
+
+  /** Prefer fullscreen on the reward layer (whole-screen popup); fall back to the video element, then iOS native video fullscreen. */
+  function tryEnterDailyRewardFullscreen(layer, video) {
+    if (!layer) return;
+    function requestOn(el) {
+      if (!el) return null;
+      try {
+        if (el.requestFullscreen) {
+          return el.requestFullscreen({ navigationUI: "hide" });
+        }
+        if (el.webkitRequestFullscreen) {
+          return el.webkitRequestFullscreen();
+        }
+        if (el.msRequestFullscreen) {
+          el.msRequestFullscreen();
+          return Promise.resolve();
+        }
+      } catch (err) {
+        return Promise.reject(err);
+      }
+      return null;
+    }
+    var p = requestOn(layer);
+    if (p && typeof p.then === "function" && p.catch) {
+      p.catch(function () {
+        var p2 = requestOn(video);
+        if (p2 && typeof p2.then === "function" && p2.catch) {
+          p2.catch(function () {});
+        }
+      });
+      return;
+    }
+    var p3 = requestOn(video);
+    if (p3 && typeof p3.then === "function" && p3.catch) {
+      p3.catch(function () {});
+    }
+  }
+
+  function tryIOSVideoNativeFullscreen(video) {
+    if (!video || !video.webkitEnterFullscreen) return;
+    try {
+      video.webkitEnterFullscreen();
+    } catch (e) {}
+  }
+
+  function openDailyRewardVideoLayer() {
+    var layer = document.getElementById("daily-reward-layer");
+    var video = document.getElementById("daily-reward-video");
+    if (!layer || !video) return;
+    var completedBeforeOpen = hasCompletedDailySurpriseToday();
+    var fb = document.getElementById("daily-reward-fallback");
+    if (fb) fb.hidden = true;
+    layer.hidden = false;
+    document.body.classList.add("body--daily-reward-open");
+    tryEnterDailyRewardFullscreen(layer, video);
+    if (!completedBeforeOpen) {
+      video.addEventListener(
+        "playing",
+        function onDailyRewardPlaying() {
+          markDailySurpriseComplete();
+          initDailyChallengeDescription();
+        },
+        { once: true }
+      );
+    }
+    video.load();
+    video.addEventListener(
+      "loadedmetadata",
+      function onDailyRewardMeta() {
+        video.currentTime = 0;
+        var pp = video.play();
+        if (pp && typeof pp.catch === "function") {
+          pp.catch(function () {});
+        }
+        window.setTimeout(function () {
+          var fs = getDailyRewardFullscreenElement();
+          if (fs !== layer && fs !== video) {
+            tryEnterDailyRewardFullscreen(layer, video);
+          }
+        }, 80);
+        window.setTimeout(function () {
+          var fs = getDailyRewardFullscreenElement();
+          if (!fs) {
+            tryIOSVideoNativeFullscreen(video);
+          }
+        }, 320);
+      },
+      { once: true }
+    );
+  }
+
+  function closeDailyRewardVideoLayer() {
+    var layer = document.getElementById("daily-reward-layer");
+    var video = document.getElementById("daily-reward-video");
+    if (video) {
+      video.pause();
+    }
+    if (getDailyRewardFullscreenElement()) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(function () {});
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+    if (layer) layer.hidden = true;
+    document.body.classList.remove("body--daily-reward-open");
+  }
+
+  function initDailyChallengeDescription() {
+    var desc = document.getElementById("challenge-description");
+    var sectionBtn = document.getElementById("daily-surprise-section-play");
+    if (hasCompletedDailySurpriseToday()) {
+      if (desc) {
+        desc.textContent =
+          "You've unlocked today's reward. Come back tomorrow for the next surprise — or watch today's clip again below.";
+      }
+      if (sectionBtn) sectionBtn.textContent = "Watch today’s reward again";
+    } else {
+      if (desc) {
+        desc.textContent =
+          "When you first open the site each day, a popup invites you to play a quick game to unlock that day’s video reward. Missed it? Use the button below anytime.";
+      }
+      if (sectionBtn) sectionBtn.textContent = "Play today’s game";
+    }
+  }
+
+  function initDailyChallenge() {
+    var title = document.getElementById("challenge-title");
+    if (title) title.textContent = "Daily surprise";
+    initDailyChallengeDescription();
+  }
+
+  var dailySurpriseFlowBound = false;
+
+  function initDailySurpriseFlow() {
+    if (dailySurpriseFlowBound) return;
+    dailySurpriseFlowBound = true;
+
+    var playBtn = document.getElementById("daily-surprise-play");
+    var dismissBtn = document.getElementById("daily-surprise-dismiss");
+    var backdrop = document.getElementById("daily-surprise-backdrop");
+    var submitBtn = document.getElementById("daily-quiz-submit");
+    var quizInput = document.getElementById("daily-quiz-input");
+    var envelopeBtn = document.getElementById("daily-envelope-btn");
+    var closeVid = document.getElementById("daily-reward-close");
+    var rewardVideo = document.getElementById("daily-reward-video");
+    var sectionPlay = document.getElementById("daily-surprise-section-play");
+
+    if (sectionPlay) {
+      sectionPlay.addEventListener("click", openDailySurpriseFromSection);
+    }
+    if (playBtn) {
+      playBtn.addEventListener("click", function () {
+        showDailySurpriseStep("daily-step-quiz");
+        if (quizInput) {
+          window.setTimeout(function () {
+            quizInput.focus();
+          }, 80);
+        }
+      });
+    }
+    if (dismissBtn) dismissBtn.addEventListener("click", closeDailySurpriseModal);
+    if (backdrop) backdrop.addEventListener("click", closeDailySurpriseModal);
+    if (submitBtn) submitBtn.addEventListener("click", submitDailyQuiz);
+    if (quizInput) {
+      quizInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") submitDailyQuiz();
+      });
+    }
+    if (envelopeBtn) envelopeBtn.addEventListener("click", onEnvelopeOpen);
+    if (closeVid) closeVid.addEventListener("click", closeDailyRewardVideoLayer);
+    if (rewardVideo) {
+      rewardVideo.addEventListener("error", function () {
+        var fb = document.getElementById("daily-reward-fallback");
+        if (fb) fb.hidden = false;
+      });
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      var modal = document.getElementById("daily-surprise-modal");
+      if (modal && !modal.hidden) {
+        closeDailySurpriseModal();
+      }
+      var layer = document.getElementById("daily-reward-layer");
+      if (layer && !layer.hidden) {
+        closeDailyRewardVideoLayer();
+      }
+    });
+  }
+
   function unlockSurprise() {
     els.surpriseLocked.hidden = true;
     els.surpriseOpen.hidden = false;
@@ -955,6 +1301,7 @@
       runButterflyFormation();
       if (els.heroSubtitle) els.heroSubtitle.classList.add("is-visible");
       window.setTimeout(runTypewriter, 800);
+      window.setTimeout(openDailySurpriseIfNeeded, 1400);
       return;
     }
 
@@ -994,6 +1341,7 @@
         window.setTimeout(function () {
           overlay.classList.add("wake-overlay--gone");
           overlay.remove();
+          window.setTimeout(openDailySurpriseIfNeeded, 500);
         }, 1100);
       }, 2100);
     });
@@ -1013,6 +1361,7 @@
     });
     if (els.heroSubtitle) els.heroSubtitle.classList.add("is-visible");
     runTypewriter();
+    window.setTimeout(openDailySurpriseIfNeeded, 700);
   }
 
   /** Testing: ?resetGallery=1 clears gallery tap data in this browser and, if Supabase is configured, resets the shared row. Returns true if reset ran. */
@@ -1038,12 +1387,16 @@
   }
 
   function init() {
+    maybeResetDailySurpriseFromQuery();
     var didReset = maybeResetGalleryFromQuery();
     var afterSync = function () {
       applyHeroGreeting();
       initStarChart();
       buildNameLetters();
       initGalleryProgress();
+      initDailyWish();
+      initDailyChallenge();
+      initDailySurpriseFlow();
 
       if (isBirthdayTime()) {
         updateCountdown();

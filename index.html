@@ -78,6 +78,7 @@
       <a href="#message">Message</a>
       <a href="#stars">Sky</a>
       <a href="#gallery">Gallery</a>
+      <a href="#daily">Daily</a>
       <a href="#surprise">Surprise</a>
     </nav>
   </header>
@@ -89,12 +90,14 @@
         <video
           id="hero-video"
           class="hero__video"
-          src="assets/images/IMG_8336.MOV"
           muted
           loop
           playsinline
-          preload="metadata"
-        ></video>
+          preload="auto"
+          poster=""
+        >
+          <source src="assets/images/IMG_8336.mp4" type="video/mp4" />
+        </video>
         <div class="hero__video-scrim"></div>
         <!-- Soft frosted blur behind the name (uses backdrop-filter) -->
         <div class="hero__name-blur" aria-hidden="true"></div>
@@ -339,6 +342,35 @@
       </div>
     </section>
 
+    <!-- Daily: daily wish and interactive games -->
+    <section id="daily" class="daily-section">
+      <h2 class="section-title">Daily Wish & Games</h2>
+      <p class="section-lead">A fresh wish each day and fun games to brighten your countdown.</p>
+      
+      <div class="daily-content">
+        <div class="daily-wish glass">
+          <h3>Today's Wish</h3>
+          <p id="daily-message">Loading today's special message...</p>
+        </div>
+        
+        <div class="daily-challenge glass">
+          <h3 id="challenge-title">Daily surprise</h3>
+          <p id="challenge-description">
+            When you first open the site each day, a popup invites you to play a quick game to unlock that day’s video reward. Missed it? Use the button below anytime.
+          </p>
+          <div class="daily-challenge__actions">
+            <button
+              type="button"
+              class="daily-surprise__btn daily-surprise__btn--primary"
+              id="daily-surprise-section-play"
+            >
+              Play today’s game
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Surprise -->
     <section id="surprise" class="surprise-section">
       <h2 class="section-title">Surprise</h2>
@@ -366,6 +398,81 @@
   <footer class="site-footer" id="site-footer">
     <p>Made with care and love for <strong>Madhu Shalini</strong> · June 30</p>
   </footer>
+
+  <!-- Daily surprise: after wake intro, once per calendar day -->
+  <div
+    id="daily-surprise-modal"
+    class="daily-surprise-modal"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="daily-surprise-title"
+  >
+    <div class="daily-surprise-modal__backdrop" id="daily-surprise-backdrop" aria-hidden="true"></div>
+    <div class="daily-surprise-modal__panel glass">
+      <div id="daily-step-intro" class="daily-surprise__step">
+        <h2 id="daily-surprise-title" class="daily-surprise__title">Daily surprise</h2>
+        <p class="daily-surprise__lead">Daily games activated — play to unlock today’s reward!</p>
+        <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" id="daily-surprise-play">
+          Play
+        </button>
+        <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" id="daily-surprise-dismiss">
+          Not now
+        </button>
+      </div>
+
+      <div id="daily-step-quiz" class="daily-surprise__step" hidden>
+        <p class="daily-surprise__question" id="daily-quiz-question">YOUR FAVOURITE BTS MEMBER</p>
+        <label class="daily-surprise__label" for="daily-quiz-input">Your answer</label>
+        <input
+          type="text"
+          id="daily-quiz-input"
+          class="daily-surprise__input"
+          autocomplete="off"
+          autocapitalize="characters"
+          maxlength="32"
+        />
+        <p id="daily-quiz-feedback" class="daily-surprise__feedback" role="status" hidden></p>
+        <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" id="daily-quiz-submit">
+          Submit
+        </button>
+      </div>
+
+      <div id="daily-step-envelope" class="daily-surprise__step" hidden>
+        <p class="daily-surprise__envelope-hint">You got it — your reward is sealed inside.</p>
+        <button type="button" class="daily-envelope" id="daily-envelope-btn" aria-label="Open envelope for today’s reward">
+          <span class="daily-envelope__inner">
+            <span class="daily-envelope__body" aria-hidden="true"></span>
+            <span class="daily-envelope__paper" aria-hidden="true"></span>
+            <span class="daily-envelope__flap" aria-hidden="true"></span>
+          </span>
+          <span class="daily-envelope__cta">Click here to earn your reward</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full-screen reward video (after envelope opens) -->
+  <div id="daily-reward-layer" class="daily-reward-layer" hidden>
+    <button type="button" class="daily-reward-layer__close" id="daily-reward-close" aria-label="Close video">
+      ✕
+    </button>
+    <div class="daily-reward-layer__frame">
+      <video
+        id="daily-reward-video"
+        class="daily-reward-video"
+        controls
+        playsinline
+        preload="auto"
+        poster=""
+      >
+        <source src="assets/images/IMG_8336.mp4" type="video/mp4" />
+      </video>
+      <p id="daily-reward-fallback" class="daily-reward-layer__fallback" hidden>
+        This clip couldn’t load or play. Check that <code>assets/images/IMG_8336.mp4</code> is present and uses a common format (H.264 video + AAC audio).
+      </p>
+    </div>
+  </div>
 
   <!-- Shared SVG gradients (all butterflies reference these — no duplicate ids) -->
   <svg xmlns="http://www.w3.org/2000/svg" class="bf-defs" aria-hidden="true" focusable="false">
@@ -454,6 +561,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
   <script src="astronomy-config.js"></script>
-  <script src="script.js?v=7"></script>
+  <script src="script.js?v=11"></script>
 </body>
 </html>
