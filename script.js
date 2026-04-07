@@ -1122,9 +1122,6 @@
     }
   }
 
-  var songWizardStep = 1;
-  var songWizardBound = false;
-
   function setSongFeedbackStatusMessage(msg) {
     var status = document.getElementById("song-feedback-status");
     if (!status) return;
@@ -1137,66 +1134,9 @@
     status.textContent = msg;
   }
 
-  function validateSongWizardStep(step) {
-    if (step === 1) {
-      var t1 = document.getElementById("song-feedback-track1");
-      if (!t1 || !(t1.value || "").trim()) return "Please tell how Track 1 made you feel.";
-    } else if (step === 2) {
-      var t2 = document.getElementById("song-feedback-track2");
-      if (!t2 || !(t2.value || "").trim()) return "Please tell how Track 2 made you feel.";
-    } else if (step === 3) {
-      var fav = document.getElementById("song-feedback-favorite");
-      if (!fav || !(fav.value || "").trim()) return "Please choose your favorite track.";
-    } else if (step === 4) {
-      var ow = document.getElementById("song-feedback-oneword");
-      var oneWord = ow ? (ow.value || "").trim() : "";
-      if (!oneWord) return "Please share one word for me.";
-      if (/\s/.test(oneWord)) return "Please keep it to one word only.";
-    }
-    return "";
-  }
-
-  function showSongFeedbackWizardStep(step) {
-    var wizard = document.getElementById("song-feedback-wizard");
-    if (!wizard) return;
-    if (step < 1) step = 1;
-    if (step > 5) step = 5;
-    songWizardStep = step;
-    var progress = document.getElementById("song-feedback-progress");
-    if (progress) progress.textContent = "Question " + step + " of 5";
-    wizard.querySelectorAll(".song-feedback-step").forEach(function (el) {
-      var n = parseInt(el.getAttribute("data-song-step"), 10);
-      el.hidden = n !== step;
-    });
-  }
-
   function initSongFeedbackWizard() {
-    var wizard = document.getElementById("song-feedback-wizard");
-    if (!wizard) return;
-    if (!songWizardBound) {
-      songWizardBound = true;
-      wizard.addEventListener("click", function (e) {
-        var nextBtn = e.target.closest("[data-song-next]");
-        if (nextBtn) {
-          var err = validateSongWizardStep(songWizardStep);
-          if (err) {
-            setSongFeedbackStatusMessage(err);
-            return;
-          }
-          setSongFeedbackStatusMessage("");
-          showSongFeedbackWizardStep(songWizardStep + 1);
-          return;
-        }
-        var backBtn = e.target.closest("[data-song-back]");
-        if (backBtn) {
-          setSongFeedbackStatusMessage("");
-          showSongFeedbackWizardStep(songWizardStep - 1);
-        }
-      });
-    }
-    // Always start from Question 1 so the flow is experienced in order,
-    // even if feedback was previously saved.
-    showSongFeedbackWizardStep(1);
+    // Legacy wizard removed; keep function as a no-op so render flow doesn't break.
+    return;
   }
 
   function renderDailyPhase2UI() {
@@ -1248,44 +1188,20 @@
   }
 
   function submitSongFeedback() {
-    var track1Input = document.getElementById("song-feedback-track1");
-    var track2Input = document.getElementById("song-feedback-track2");
     var favoriteInput = document.getElementById("song-feedback-favorite");
-    var oneWordInput = document.getElementById("song-feedback-oneword");
-    var extraInput = document.getElementById("song-feedback-extra");
+    var feelingsInput = document.getElementById("song-feedback-feelings");
     var status = document.getElementById("song-feedback-status");
-    if (!track1Input || !track2Input || !favoriteInput || !oneWordInput || !extraInput || !status) return;
-    var track1Feel = (track1Input.value || "").trim();
-    var track2Feel = (track2Input.value || "").trim();
+    if (!favoriteInput || !feelingsInput || !status) return;
     var favorite = (favoriteInput.value || "").trim();
-    var oneWord = (oneWordInput.value || "").trim();
-    var extra = (extraInput.value || "").trim();
-    if (!track1Feel || !track2Feel || !favorite || !oneWord) {
-      setSongFeedbackStatusMessage("Please answer all required questions (1-4).");
+    var feelings = (feelingsInput.value || "").trim();
+    if (!favorite || !feelings) {
+      setSongFeedbackStatusMessage("Please choose a track and share how it made you feel.");
       return;
     }
-    if (/\s/.test(oneWord)) {
-      setSongFeedbackStatusMessage("The 'one word' answer should be a single word only.");
-      return;
-    }
-    var compactSummary =
-      "Track1 feeling: " +
-      track1Feel +
-      " | Track2 feeling: " +
-      track2Feel +
-      " | Favorite: " +
-      favorite +
-      " | One word: " +
-      oneWord +
-      (extra ? " | Extra: " + extra : "");
     setSongFeedbackStatusMessage("Saving song feedback...");
-    saveDailyFeedbackToSupabase("song_feedback", compactSummary, {
+    saveDailyFeedbackToSupabase("song_feedback", feelings, {
       song_answer: getDailySongAnswer() || null,
-      track1_feeling: track1Feel,
-      track2_feeling: track2Feel,
       favorite_track: favorite,
-      one_word_for_me: oneWord,
-      extra_note: extra || null,
     })
       .then(function () {
         setDailySongFeedbackDone();

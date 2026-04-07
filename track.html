@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Track · Lyrics</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="track-page">
+    <main class="track-page__main">
+      <a class="track-page__back" href="index.html#daily">← Back</a>
+
+      <section class="track-page__card glass" aria-labelledby="track-title">
+        <h1 id="track-title" class="track-page__title">Loading track…</h1>
+        <p id="track-subtitle" class="track-page__subtitle"></p>
+
+        <audio id="track-audio" class="track-page__audio" controls playsinline preload="metadata"></audio>
+
+        <div class="track-page__lyrics">
+          <h2 class="track-page__lyrics-title">Lyrics</h2>
+          <pre id="track-lyrics" class="track-page__lyrics-pre">Loading lyrics…</pre>
+          <p id="track-lyrics-error" class="track-page__lyrics-error" hidden></p>
+        </div>
+      </section>
+    </main>
+
+    <script src="track.js?v=3"></script>
+  </body>
+</html>
+

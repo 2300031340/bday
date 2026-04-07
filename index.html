@@ -406,120 +406,43 @@
 
             <div id="song-tracks-area" class="song-tracks" hidden>
               <p class="song-tracks__title">Get your earphones ready buddy 🎧</p>
-              <div class="song-track-item">
-                <p class="song-track-item__label">Track 1 — for everyone</p>
-                <audio id="song-track-1" controls preload="none" src="assets/audio/track 1.mp3"></audio>
-              </div>
-              <div class="song-track-item">
-                <p class="song-track-item__label">Track 2 — only you can listen</p>
-                <audio id="song-track-2" controls preload="none" src="assets/audio/track 2.mp3"></audio>
-              </div>
+              <a class="song-track-link glass" href="track.html#track=1" aria-label="Open Track 1 lyrics page">
+                <p class="song-track-link__kicker">Track 1</p>
+                <p class="song-track-link__label">For everyone</p>
+                <p class="song-track-link__hint">Tap to open song + lyrics</p>
+              </a>
+              <a class="song-track-link glass" href="track.html#track=2" aria-label="Open Track 2 lyrics page">
+                <p class="song-track-link__kicker">Track 2</p>
+                <p class="song-track-link__label">Only you can listen</p>
+                <p class="song-track-link__hint">Tap to open song + lyrics</p>
+              </a>
 
               <div class="daily-feedback-block daily-feedback-block--qa">
                 <p class="song-feedback-wizard__title">Bee lovely while giving feedback too 💜</p>
-                <p class="song-feedback-wizard__progress" id="song-feedback-progress">Question 1 of 5</p>
-                <div id="song-feedback-wizard">
-                  <div class="song-feedback-step" data-song-step="1">
-                    <label class="daily-feedback-block__label" for="song-feedback-track1">
-                      1) Track 1 (for everyone): How did it make you feel?
-                    </label>
-                    <textarea
-                      id="song-feedback-track1"
-                      class="daily-feedback-block__input"
-                      rows="2"
-                      maxlength="600"
-                      placeholder="Your feeling for Track 1..."
-                    ></textarea>
-                    <div class="song-feedback-step__actions song-feedback-step__actions--end">
-                      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" data-song-next>
-                        Next
-                      </button>
-                    </div>
-                  </div>
+                <label class="daily-feedback-block__label" for="song-feedback-favorite">
+                  Which track did you like more?
+                </label>
+                <select id="song-feedback-favorite" class="daily-feedback-block__input daily-feedback-block__select">
+                  <option value="">Select one</option>
+                  <option value="track1">Track 1 — for everyone</option>
+                  <option value="track2">Track 2 — only you can listen</option>
+                  <option value="both">Both / can’t choose</option>
+                </select>
 
-                  <div class="song-feedback-step" data-song-step="2" hidden>
-                    <label class="daily-feedback-block__label" for="song-feedback-track2">
-                      2) Track 2 (only you can listen): How did it make you feel?
-                    </label>
-                    <textarea
-                      id="song-feedback-track2"
-                      class="daily-feedback-block__input"
-                      rows="2"
-                      maxlength="600"
-                      placeholder="Your feeling for Track 2..."
-                    ></textarea>
-                    <div class="song-feedback-step__actions">
-                      <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" data-song-back>
-                        Back
-                      </button>
-                      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" data-song-next>
-                        Next
-                      </button>
-                    </div>
-                  </div>
+                <label class="daily-feedback-block__label" for="song-feedback-feelings">
+                  How did it make you feel?
+                </label>
+                <textarea
+                  id="song-feedback-feelings"
+                  class="daily-feedback-block__input"
+                  rows="3"
+                  maxlength="1200"
+                  placeholder="Soft, honest words welcome…"
+                ></textarea>
 
-                  <div class="song-feedback-step" data-song-step="3" hidden>
-                    <label class="daily-feedback-block__label" for="song-feedback-favorite">
-                      3) Which track did you like more?
-                    </label>
-                    <select id="song-feedback-favorite" class="daily-feedback-block__input daily-feedback-block__select">
-                      <option value="">Select one</option>
-                      <option value="track1">Track 1 — for everyone</option>
-                      <option value="track2">Track 2 — only you can listen</option>
-                      <option value="both">Both equally</option>
-                    </select>
-                    <div class="song-feedback-step__actions">
-                      <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" data-song-back>
-                        Back
-                      </button>
-                      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" data-song-next>
-                        Next
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="song-feedback-step" data-song-step="4" hidden>
-                    <label class="daily-feedback-block__label" for="song-feedback-oneword">
-                      4) One word for me:
-                    </label>
-                    <input
-                      id="song-feedback-oneword"
-                      class="daily-feedback-block__input"
-                      type="text"
-                      maxlength="40"
-                      placeholder="One word only"
-                    />
-                    <div class="song-feedback-step__actions">
-                      <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" data-song-back>
-                        Back
-                      </button>
-                      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" data-song-next>
-                        Next
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="song-feedback-step" data-song-step="5" hidden>
-                    <label class="daily-feedback-block__label" for="song-feedback-extra">
-                      5) Anything else you want to say? (optional)
-                    </label>
-                    <textarea
-                      id="song-feedback-extra"
-                      class="daily-feedback-block__input"
-                      rows="2"
-                      maxlength="1000"
-                      placeholder="Optional extra note..."
-                    ></textarea>
-                    <div class="song-feedback-step__actions">
-                      <button type="button" class="daily-surprise__btn daily-surprise__btn--ghost" data-song-back>
-                        Back
-                      </button>
-                      <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" id="song-feedback-submit">
-                        Send song feedback
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <button type="button" class="daily-surprise__btn daily-surprise__btn--primary" id="song-feedback-submit">
+                  Send song feedback
+                </button>
                 <p class="daily-feedback-block__status" id="song-feedback-status" hidden></p>
               </div>
             </div>
