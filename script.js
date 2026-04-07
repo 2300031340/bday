@@ -701,8 +701,10 @@
 
   function isSongSectionUnlockedNow() {
     var unlockAt = getSongUnlockDateTime();
+    // Once the daily phase 2 is reached and an unlock time exists,
+    // keep the song section unlocked without enforcing a clock-based wait.
     if (!unlockAt) return false;
-    return Date.now() >= unlockAt.getTime();
+    return true;
   }
 
   function formatTimeDiff(ms) {
@@ -992,9 +994,15 @@
     }
   }
 
+  function getDailySongAnswerStorageKey() {
+    // Tie the song answer to the specific calendar day,
+    // so a previous day's choice doesn't auto-unlock today's tracks.
+    return DAILY_SONG_ANSWER_LS + "_" + getDailySurpriseDateKey();
+  }
+
   function getDailySongAnswer() {
     try {
-      return localStorage.getItem(DAILY_SONG_ANSWER_LS) || "";
+      return localStorage.getItem(getDailySongAnswerStorageKey()) || "";
     } catch (e) {
       return "";
     }
@@ -1002,7 +1010,7 @@
 
   function setDailySongAnswer(v) {
     try {
-      localStorage.setItem(DAILY_SONG_ANSWER_LS, v);
+      localStorage.setItem(getDailySongAnswerStorageKey(), v);
     } catch (e) {}
   }
 
@@ -1186,10 +1194,8 @@
         }
       });
     }
-    if (isDailySongFeedbackDone()) {
-      showSongFeedbackWizardStep(5);
-      return;
-    }
+    // Always start from Question 1 so the flow is experienced in order,
+    // even if feedback was previously saved.
     showSongFeedbackWizardStep(1);
   }
 

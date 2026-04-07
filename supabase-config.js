@@ -1,0 +1,3 @@
+window.MADHU_SUPABASE_URL = "https://eokfgodoakvyvfrklrvf.supabase.co";
+window.MADHU_SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVva2Znb2RvYWt2eXZmcmtscnZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNDY5MTcsImV4cCI6MjA5MDkyMjkxN30.TNlPt7ZVX1VIuoRp6nQ5SmwY74XvySh4gXEA_KnFuvU";
