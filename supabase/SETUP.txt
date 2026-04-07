@@ -13,7 +13,14 @@ Shared gallery progress (Supabase)
 
 6. Deploy your site with both index.html and supabase-config.js (same folder as script.js)
 
-Without supabase-config.js filled in, the site still works using only localStorage on each device.
+Vercel (recommended — no secrets in git):
+- Project → Settings → Environment Variables → add:
+  - MADHU_SUPABASE_URL = your Supabase project URL
+  - MADHU_SUPABASE_ANON_KEY = anon public key
+- Redeploy. Build runs `npm run build`, which writes supabase-config.js on the server from those vars.
+- `supabase-config.js` stays gitignored locally; Vercel generates it during deploy.
+
+Without supabase-config.js filled in (locally) or env vars set (Vercel), the site still works using only localStorage on each device.
 
 Reset testing data:
 - Add ?resetGallery=1 to the URL (clears this browser + uploads empty state if Supabase is configured)

@@ -1014,6 +1014,26 @@
     } catch (e) {}
   }
 
+  function setWhatsAppFeedbackLinks() {
+    try {
+      var dayKey = getDailySurpriseDateKey();
+      var dailyLink = document.getElementById("daily-feedback-whatsapp");
+      if (dailyLink) {
+        dailyLink.href =
+          "https://wa.me/?text=" +
+          encodeURIComponent("Hey ✨ My feedback for today’s gift (" + dayKey + "): ");
+      }
+      var songLink = document.getElementById("song-feedback-whatsapp");
+      if (songLink) {
+        var ans = getDailySongAnswer();
+        var ansText = ans ? (" (answer: " + ans + ")") : "";
+        songLink.href =
+          "https://wa.me/?text=" +
+          encodeURIComponent("Hey 🎶 My song feedback (" + dayKey + ")" + ansText + ": ");
+      }
+    } catch (e) {}
+  }
+
   function setDailyInitialFeedbackDone() {
     try {
       localStorage.setItem(DAILY_INITIAL_FEEDBACK_DONE_LS, "1");
@@ -1028,16 +1048,26 @@
 
   function saveDailyFeedbackToSupabase(category, feedbackText, meta) {
     var client = getSupabaseClient();
-    if (!client) return Promise.resolve();
+    if (!client) return Promise.reject(new Error("Supabase client not configured"));
     return client
       .from("daily_feedback")
-      .insert({
-        day_key: getDailySurpriseDateKey(),
-        category: category,
-        feedback_text: feedbackText,
-        meta: meta || null,
-        created_at: new Date().toISOString(),
-      })
+      .insert(
+        Object.assign(
+          {
+            day_key: getDailySurpriseDateKey(),
+            category: category,
+            feedback_text: feedbackText,
+            meta: meta || null,
+            created_at: new Date().toISOString(),
+          },
+          meta && typeof meta === "object"
+            ? {
+                one_word_about_me: meta.one_word_about_me || null,
+                one_word_for_me: meta.one_word_for_me || null,
+              }
+            : null
+        )
+      )
       .then(function (res) {
         if (res.error) throw res.error;
       });
@@ -1116,10 +1146,8 @@
     reply.textContent = getSongReplyText(ans);
     tracks.hidden = false;
     initSongFeedbackWizard();
-    if (songStatus && isDailySongFeedbackDone()) {
-      songStatus.hidden = false;
-      songStatus.textContent = "Your song feedback is already saved. Thank you 💜";
-    }
+    // We now collect feedback via WhatsApp; never show "already saved" banners.
+    if (songStatus) songStatus.hidden = true;
   }
 
   function setSongFeedbackStatusMessage(msg) {
@@ -1162,6 +1190,7 @@
     initialWrap.hidden = true;
     renderSongTimeLock();
     renderDailySongAnswerState();
+    setWhatsAppFeedbackLinks();
   }
 
   function submitInitialDailyFeedback() {
@@ -1190,25 +1219,39 @@
   function submitSongFeedback() {
     var favoriteInput = document.getElementById("song-feedback-favorite");
     var feelingsInput = document.getElementById("song-feedback-feelings");
+    var aboutInput = document.getElementById("song-feedback-oneword-about");
+    var forInput = document.getElementById("song-feedback-oneword-for");
     var status = document.getElementById("song-feedback-status");
-    if (!favoriteInput || !feelingsInput || !status) return;
+    if (!favoriteInput || !feelingsInput || !aboutInput || !forInput || !status) return;
     var favorite = (favoriteInput.value || "").trim();
     var feelings = (feelingsInput.value || "").trim();
-    if (!favorite || !feelings) {
-      setSongFeedbackStatusMessage("Please choose a track and share how it made you feel.");
+    var oneAbout = (aboutInput.value || "").trim();
+    var oneFor = (forInput.value || "").trim();
+
+    if (!favorite || !feelings || !oneAbout || !oneFor) {
+      setSongFeedbackStatusMessage("Please fill everything (favorite, feelings, and both one-word answers).");
+      return;
+    }
+    if (/\s/.test(oneAbout) || /\s/.test(oneFor)) {
+      setSongFeedbackStatusMessage("The one-word answers should be a single word only.");
       return;
     }
     setSongFeedbackStatusMessage("Saving song feedback...");
     saveDailyFeedbackToSupabase("song_feedback", feelings, {
       song_answer: getDailySongAnswer() || null,
       favorite_track: favorite,
+      one_word_about_me: oneAbout,
+      one_word_for_me: oneFor,
     })
       .then(function () {
         setDailySongFeedbackDone();
         setSongFeedbackStatusMessage("Saved. So happy you listened \ud83c\udfb6");
       })
-      .catch(function () {
-        setSongFeedbackStatusMessage("Could not save to cloud now. Please try again.");
+      .catch(function (e) {
+        console.warn("song feedback:", e);
+        setSongFeedbackStatusMessage(
+          "Could not save. If this is Vercel, check that `supabase-config.js` is deployed (it’s ignored by git)."
+        );
       });
   }
 
@@ -1316,12 +1359,14 @@
       songYes.addEventListener("click", function () {
         setDailySongAnswer("yes");
         renderDailySongAnswerState();
+        setWhatsAppFeedbackLinks();
       });
     }
     if (songNo) {
       songNo.addEventListener("click", function () {
         setDailySongAnswer("no");
         renderDailySongAnswerState();
+        setWhatsAppFeedbackLinks();
       });
     }
     if (songFeedbackSubmit) {

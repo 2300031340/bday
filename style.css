@@ -1687,6 +1687,9 @@ section {
   color: var(--text);
   text-decoration: none;
   font-weight: 600;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
   border: 1px solid var(--glass-border);
   border-radius: 999px;
   padding: 0.55rem 0.9rem;
@@ -1715,6 +1718,14 @@ section {
   text-align: center;
   color: var(--text-muted);
   font-weight: 600;
+}
+
+.track-page__wa-note {
+  margin: -0.5rem 0 1.1rem;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--accent-pink);
 }
 
 .track-page__audio {

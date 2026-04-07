@@ -6,6 +6,8 @@ create table if not exists public.daily_feedback (
   day_key text not null,
   category text not null,
   feedback_text text not null,
+  one_word_about_me text,
+  one_word_for_me text,
   meta jsonb,
   created_at timestamptz not null default now()
 );

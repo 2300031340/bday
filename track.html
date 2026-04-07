@@ -8,11 +8,14 @@
   </head>
   <body class="track-page">
     <main class="track-page__main">
-      <a class="track-page__back" href="index.html#daily">← Back</a>
+      <button type="button" class="track-page__back" id="track-page-back">← Back</button>
 
       <section class="track-page__card glass" aria-labelledby="track-title">
         <h1 id="track-title" class="track-page__title">Loading track…</h1>
         <p id="track-subtitle" class="track-page__subtitle"></p>
+        <p class="track-page__wa-note">
+          Send your song feedback on WhatsApp about both the songs and one word about me.
+        </p>
 
         <audio id="track-audio" class="track-page__audio" controls playsinline preload="metadata"></audio>
 
@@ -24,7 +27,7 @@
       </section>
     </main>
 
-    <script src="track.js?v=3"></script>
+    <script src="track.js?v=4"></script>
   </body>
 </html>
 

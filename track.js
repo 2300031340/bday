@@ -85,6 +85,17 @@
     if (preEl) preEl.textContent = "";
   }
 
+  var backBtn = document.getElementById("track-page-back");
+  if (backBtn) {
+    backBtn.addEventListener("click", function () {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+  }
+
   fetch(encodeAudioPath(meta.lyrics), { cache: "no-store" })
     .then(function (res) {
       if (!res.ok) throw new Error("HTTP " + res.status);
